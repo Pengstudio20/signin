@@ -60,12 +60,13 @@
 
 <script>
 (async function() {
-    // ================== JSONbin 配置（已更新） ==================
-    const JSONBIN_API_KEY = '$2a$10$fYzdVq.qxWyl7ckduPvu/OAAk.KsEOIpZbmc4g39D8jsppC0sFCRa';
-    const JSONBIN_BIN_ID = '69f462eaaaba8821975b8b4f'; // 新 Bin ID
-    const API_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+    // ================== jsonstorage.net 配置 ==================
+    const JSONSTORAGE_ID = '1a4f9b33-45f8-4f66-9ced-1122695b4e59';   // 物品ID
+    const JSONSTORAGE_KEY = 'fddc5460-fb97-4bda-b675-2ecd1956be89';    // 读写密钥（读写密钥放在请求头里）
+    const READ_URL = `https://api.jsonstorage.net/v1/json/${JSONSTORAGE_ID}?apiKey=${JSONSTORAGE_KEY}`;
+    const WRITE_URL = `https://api.jsonstorage.net/v1/json/${JSONSTORAGE_ID}?apiKey=${JSONSTORAGE_KEY}`;
 
-    const KEYS = { users: 'cu_jb2', records: 'cr_jb2', subjects: 'cs_jb2', session: 'csess_jb2' };
+    const KEYS = { users: 'cu_loc', records: 'cr_loc', subjects: 'cs_loc', session: 'csess_loc' };
     const defaultSubjects = [
         { id: 'math', name: '高等数学', targetLat: 39.9042, targetLng: 116.4074, radius: 500,
           checkinCode: 'MATH2025', qrContent: 'SUBJECT:math', publishDate: '', enableLocation: true, enableQRCode: true, enableCode: true },
@@ -97,15 +98,14 @@
         if (!subjects || subjects.length === 0) subjects = [...defaultSubjects];
     }
 
-    async function loadFromJsonbin() {
+    async function loadFromCloud() {
         try {
-            const res = await fetch(API_URL, { headers: { 'X-Access-Key': JSONBIN_API_KEY } });
+            const res = await fetch(READ_URL);
             if (res.ok) {
                 const data = await res.json();
-                const parsed = data.record;
-                users = parsed.users || [...defaultUsers];
-                records = parsed.records || [];
-                subjects = parsed.subjects || [...defaultSubjects];
+                users = data.users || [...defaultUsers];
+                records = data.records || [];
+                subjects = data.subjects || [...defaultSubjects];
                 saveToLocal();
                 return true;
             }
@@ -113,11 +113,11 @@
         return false;
     }
 
-    async function saveToJsonbin() {
+    async function saveToCloud() {
         try {
-            await fetch(API_URL, {
+            await fetch(WRITE_URL, {
                 method: 'PUT',
-                headers: { 'X-Access-Key': JSONBIN_API_KEY, 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ users, subjects, records })
             });
         } catch (e) {}
@@ -129,8 +129,8 @@
         localStorage.setItem(KEYS.subjects, JSON.stringify(subjects));
     }
 
-    async function saveAllData() { saveToLocal(); saveToJsonbin(); notifyChannel(); }
-    async function refreshData() { await loadFromJsonbin(); render(); toast('数据已刷新'); }
+    async function saveAllData() { saveToLocal(); saveToCloud(); notifyChannel(); }
+    async function refreshData() { await loadFromCloud(); render(); toast('数据已刷新'); }
 
     function toast(msg, type='success') {
         const c = $('toastContainer'); const el = document.createElement('div');
@@ -167,7 +167,7 @@
         else { root.innerHTML = renderStudent(); bindStudentEvents(); }
     }
 
-    // ---------- 认证 ----------
+    // ========== 认证界面 ==========
     function renderAuth() {
         return `<div class="card text-center"><div style="font-size:56px;">🎓</div><h2>学生课堂智能签到系统</h2>
         <p style="color:var(--text-light); margin-bottom:24px;">姓名·学号·密码登录</p>
@@ -208,7 +208,7 @@
         });
     }
 
-    // ---------- 学生端 ----------
+    // ========== 学生端 ==========
     function renderStudent() {
         const today = new Date().toISOString().split('T')[0];
         const myToday = records.filter(r => r.studentId === currentUser.studentId && r.time?.startsWith(today));
@@ -355,7 +355,7 @@
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
     }
 
-    // ---------- 教师端 ----------
+    // ========== 教师端 ==========
     function renderTeacher() {
         if(!currentUser.subjectIds || currentUser.subjectIds.length === 0) return '<div class="card">您没有负责的学科，请联系超管分配。</div>';
         const mySubjs = subjects.filter(s => currentUser.subjectIds.includes(s.id));
@@ -413,7 +413,6 @@
                 if(subj) { subj[field] = this.checked; await saveAllData(); }
             });
         });
-        setInterval(refreshData, 10000);
     }
 
     function showTeacherSubjectDetail(subjectId) {
@@ -447,7 +446,7 @@
         $('closeInfoModal').addEventListener('click', closeModal);
     }
 
-    // ---------- 超管端 ----------
+    // ========== 超管端 ==========
     function renderSuperAdmin() {
         return `<div class="card profile-card">
             ${renderAvatar(currentUser.name)}
@@ -523,7 +522,6 @@
             };
             reader.readAsText(file);
         });
-        setInterval(refreshData, 10000);
     }
 
     function renderSubjectManage() {
@@ -724,7 +722,7 @@
     }
 
     // 启动
-    await loadFromJsonbin().catch(() => {});
+    await loadFromCloud().catch(() => {});
     loadFromLocal();
     currentUser = session.load();
     if(currentUser) {
