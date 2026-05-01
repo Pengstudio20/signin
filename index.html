@@ -90,7 +90,7 @@
         });
     }
 
-    const KEYS = { users: 'cu_v2', records: 'cr_v2', subjects: 'cs_v2', classes: 'cl_v2', session: 'csess_v2' };
+    const KEYS = { users: 'cu_v2', records: 'cr_v2', subjects: 'cs_v2', classes: 'cl_v2', loginLogs: 'll_v2', session: 'csess_v2' };
     const defaultClasses = [
         { id: 'class1', name: '软件1班' },
         { id: 'class2', name: '软件2班' }
@@ -108,7 +108,7 @@
         { studentId: '20210002', name: '李四', password: '123456', role: 'student', classId: 'class2' }
     ];
 
-    let users = [], records = [], subjects = [], classes = [];
+    let users = [], records = [], subjects = [], classes = [], loginLogs = [];
     let currentUser = null, selectedSubjectId = null;
     let adminMap = null, targetMarker = null;
     const $ = id => document.getElementById(id);
@@ -125,6 +125,7 @@
         if (!subjects || subjects.length === 0) subjects = [...defaultSubjects];
         try { classes = JSON.parse(localStorage.getItem(KEYS.classes)); } catch { classes = null; }
         if (!classes || classes.length === 0) classes = [...defaultClasses];
+        try { loginLogs = JSON.parse(localStorage.getItem(KEYS.loginLogs)) || []; } catch { loginLogs = []; }
     }
 
     async function loadFromCloud() {
@@ -136,6 +137,7 @@
                 records = data.records || [];
                 subjects = data.subjects || [...defaultSubjects];
                 classes = data.classes || [...defaultClasses];
+                loginLogs = data.loginLogs || [];
                 saveToLocal();
                 return true;
             }
@@ -145,7 +147,7 @@
 
     async function saveToCloud() {
         try {
-            await fetch(DATA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ users, subjects, records, classes }) });
+            await fetch(DATA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ users, subjects, records, classes, loginLogs }) });
         } catch (e) {}
     }
 
@@ -154,6 +156,7 @@
         localStorage.setItem(KEYS.records, JSON.stringify(records));
         localStorage.setItem(KEYS.subjects, JSON.stringify(subjects));
         localStorage.setItem(KEYS.classes, JSON.stringify(classes));
+        localStorage.setItem(KEYS.loginLogs, JSON.stringify(loginLogs));
     }
 
     async function saveAllData() { saveToLocal(); saveToCloud(); notifyChannel(); }
@@ -187,6 +190,12 @@
     }
     function getClassName(classId) { const c = classes.find(x=>x.id===classId); return c ? c.name : '未知班级'; }
 
+    // 记录登录日志
+    async function addLoginLog(studentId, name, role) {
+        loginLogs.push({ studentId, name, role, time: new Date().toISOString() });
+        await saveAllData();
+    }
+
     function render() {
         const root = $('appRoot');
         if (!currentUser) { root.innerHTML = renderAuth(); bindAuthEvents(); }
@@ -214,7 +223,7 @@
     }
 
     function bindAuthEvents() {
-        $('btnLogin').addEventListener('click', () => {
+        $('btnLogin').addEventListener('click', async () => {
             const name = $('loginName').value.trim(), id = $('loginId').value.trim(), pwd = $('loginPwd').value;
             if(!name||!id||!pwd) return toast('请填写完整','error');
             const user = users.find(u=>u.studentId===id);
@@ -222,7 +231,10 @@
             if(user.name!==name) return toast('姓名不匹配','error');
             if(user.password!==pwd) return toast('密码错误','error');
             currentUser = { studentId:user.studentId, name:user.name, role:user.role, subjectIds:user.subjectIds, classId:user.classId };
-            session.save(currentUser); render();
+            session.save(currentUser);
+            // 记录登录日志
+            await addLoginLog(user.studentId, user.name, user.role);
+            render();
         });
         $('showRegister').addEventListener('click', e=>{ e.preventDefault(); $('registerPanel').style.display='block'; document.querySelector('.card').style.display='none'; });
         $('backToLogin').addEventListener('click', ()=>{ $('registerPanel').style.display='none'; document.querySelector('.card').style.display='block'; });
@@ -483,7 +495,7 @@
         $('closeInfoModal').addEventListener('click', closeModal);
     }
 
-    // ========== 超管端 ==========
+    // ========== 超管端（增加登录日志查看） ==========
     function renderSuperAdmin() {
         return `<div class="card profile-card">
             ${renderAvatar(currentUser.name)}
@@ -499,6 +511,7 @@
             <input type="file" id="excelUpload" accept=".xlsx,.xls" style="display:none;"></div>
             <div id="studentTable"></div></div>
         <button class="btn btn-block mt-2" id="allRecordsBtn">📊 全部签到记录</button>
+        <button class="btn btn-block mt-2" id="loginLogsBtn">📋 登录日志</button>
         <button class="btn btn-block mt-2" id="refreshAdminBtn">🔄 刷新数据</button>
         <div class="card mt-2"><h3>💾 数据备份</h3>
             <div class="gap-2"><button class="btn btn-block" id="exportBtn">⬇️ 导出备份</button>
@@ -549,8 +562,17 @@
                 downloadCSV(csv, '全部签到记录.csv');
             });
         });
+        $('loginLogsBtn').addEventListener('click', ()=>{
+            const logsHtml = loginLogs.length ? loginLogs.map(l=>`<div style="padding:8px;border-bottom:1px solid var(--border);">${l.name} (${l.studentId}) - ${l.role} - ${formatTime(l.time)}</div>`).join('') : '暂无登录日志';
+            showModal('登录日志', `<div style="max-height:400px;overflow-y:auto;">${logsHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportLogsBtn">📥 导出日志</button>`);
+            $('exportLogsBtn')?.addEventListener('click', ()=>{
+                let csv = '学号,姓名,角色,时间\n';
+                loginLogs.forEach(l=> csv += `${l.studentId},${l.name},${l.role},${l.time}\n`);
+                downloadCSV(csv, '登录日志.csv');
+            });
+        });
         $('exportBtn').addEventListener('click', ()=>{
-            const data = { users, subjects, records, classes };
+            const data = { users, subjects, records, classes, loginLogs };
             const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `签到备份_${new Date().toISOString().split('T')[0]}.json`; a.click();
         });
@@ -562,7 +584,7 @@
                     const data = JSON.parse(ev.target.result);
                     if(data.users&&data.subjects&&data.records&&data.classes){
                         if(confirm('恢复数据将覆盖当前所有信息，确定继续吗？')){
-                            users=data.users; subjects=data.subjects; records=data.records; classes=data.classes;
+                            users=data.users; subjects=data.subjects; records=data.records; classes=data.classes; loginLogs=data.loginLogs||[];
                             await saveAllData(); render(); toast('数据已恢复');
                         }
                     } else toast('无效备份','error');
@@ -579,7 +601,6 @@
             if(classes.length<=1) return toast('至少保留一个班级','warning');
             const id = b.dataset.id;
             classes = classes.filter(c=>c.id!==id);
-            // 同时删除关联的学科和学生
             subjects = subjects.filter(s=>s.classId!==id);
             users.forEach(u=>{ if(u.role==='student' && u.classId===id) u.classId = ''; });
             await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin();
@@ -631,10 +652,7 @@
             <td><button class="btn btn-sm assign-teacher" data-id="${t.studentId}">分配</button><button class="btn btn-sm detail-teacher" data-id="${t.studentId}">详情</button><button class="btn btn-sm btn-danger delete-user" data-id="${t.studentId}">删除</button></td></tr>`).join('')}</table>` : '<p>暂无教师</p>';
         container.querySelectorAll('.assign-teacher').forEach(b=>b.addEventListener('click', ()=>assignTeacher(b.dataset.id)));
         container.querySelectorAll('.detail-teacher').forEach(b=>b.addEventListener('click', ()=>showTeacherDetail(b.dataset.id)));
-        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{
-            users = users.filter(u=>u.studentId!==b.dataset.id);
-            await saveAllData(); renderTeacherTableForAdmin(); renderStudentTableForAdmin();
-        }));
+        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{ users = users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderTeacherTableForAdmin(); renderStudentTableForAdmin(); }));
     }
 
     function assignTeacher(teacherId) {
@@ -675,10 +693,7 @@
             if(user){ user.classId = this.value; await saveAllData(); }
         }));
         container.querySelectorAll('.detail-student').forEach(b=>b.addEventListener('click', ()=>showStudentDetailForAdmin(b.dataset.id)));
-        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{
-            users = users.filter(u=>u.studentId!==b.dataset.id);
-            await saveAllData(); renderStudentTableForAdmin();
-        }));
+        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{ users = users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderStudentTableForAdmin(); }));
     }
 
     function showStudentDetailForAdmin(studentId) {
