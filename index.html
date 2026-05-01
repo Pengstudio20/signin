@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, shrink-to-fit=no">
     <title>学生课堂智能签到系统</title>
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="apple-touch-icon" href="icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -24,16 +24,10 @@
         .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
         .card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 40px; padding: 12px 24px; font-weight: 600; font-size: 0.95rem; background: rgba(255,255,255,0.75); backdrop-filter: blur(10px); box-shadow: 0 4px 14px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; color: var(--primary); }
-        .btn:active { transform: scale(0.96); }
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-success { background: var(--success); color: #fff; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-block { width: 100%; }
-        .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
+        .btn:active { transform: scale(0.96); } .btn-primary { background: var(--primary); color: #fff; } .btn-success { background: var(--success); color: #fff; } .btn-danger { background: var(--danger); color: #fff; } .btn-block { width: 100%; } .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
         .input { width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.6); border: 1px solid var(--border); border-radius: 20px; font-size: 1rem; outline: none; }
         .input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,110,247,0.12); }
-        .input-group { margin-bottom: 16px; }
-        .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
+        .input-group { margin-bottom: 16px; } .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
         .checkin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 14px; }
         .checkin-tile { background: rgba(255,255,255,0.65); backdrop-filter: blur(16px); border-radius: var(--radius-sm); padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.5); }
         .checkin-tile .icon { font-size: 32px; margin-bottom: 8px; display: block; }
@@ -45,27 +39,18 @@
         .modal-title { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 20px; }
         .map-container { width: 100%; height: 220px; border-radius: 20px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); background: #f0f4f8; }
         .subject-chip { background: rgba(255,255,255,0.8); padding: 14px 20px; border-radius: 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .subject-chip.active { background: var(--primary); color: #fff; }
-        .subject-chip.checked { background: #dcfce7; color: #166534; }
+        .subject-chip.active { background: var(--primary); color: #fff; } .subject-chip.checked { background: #dcfce7; color: #166534; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
         .toggle input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 26px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(22px); }
+        input:checked + .slider { background-color: var(--primary); } input:checked + .slider:before { transform: translateX(22px); }
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .mini-table td, .mini-table th { padding: 10px 6px; border-bottom: 1px solid var(--border); }
         .avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700; background: var(--primary); }
-        .profile-card { display: flex; align-items: center; gap: 16px; }
-        .profile-info { flex:1; }
-        .profile-name { font-size: 1.3rem; font-weight: 700; }
-        .profile-id { color: var(--text-light); font-size: 0.9rem; }
-        .text-center { text-align: center; }
-        .mt-2 { margin-top: 8px; }
-        .mb-2 { margin-bottom: 8px; }
-        .gap-2 { display: flex; gap: 10px; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .profile-card { display: flex; align-items: center; gap: 16px; } .profile-info { flex:1; } .profile-name { font-size: 1.3rem; font-weight: 700; } .profile-id { color: var(--text-light); font-size: 0.9rem; }
+        .text-center { text-align: center; } .mt-2 { margin-top: 8px; } .mb-2 { margin-bottom: 8px; } .gap-2 { display: flex; gap: 10px; } .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .class-group { margin-bottom: 16px; border-left: 3px solid var(--primary); padding-left: 12px; }
         .class-group-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.9rem; }
         .class-header { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: var(--primary); }
@@ -89,7 +74,7 @@
     const script = document.createElement('script'); script.src = 'https://webapi.amap.com/loader.js'; document.head.appendChild(script);
     function waitForAMapLoader() { return new Promise((resolve) => { if (typeof AMapLoader !== 'undefined') { resolve(); return; } const timer = setInterval(() => { if (typeof AMapLoader !== 'undefined') { clearInterval(timer); resolve(); } }, 100); }); }
 
-    const KEYS = { users: 'cu_v5', records: 'cr_v5', subjects: 'cs_v5', classes: 'cl_v5', loginLogs: 'll_v5', session: 'csess_v5' };
+    const KEYS = { users: 'cu_v7', records: 'cr_v7', subjects: 'cs_v7', classes: 'cl_v7', loginLogs: 'll_v7', session: 'csess_v7' };
     const defaultClasses = [ { id: 'class1', name: '软件1班' }, { id: 'class2', name: '软件2班' } ];
     const defaultSubjects = [
         { id: 'math1', name: '高等数学', classId: 'class1', targetLat: 39.9042, targetLng: 116.4074, radius: 500, checkinCode: 'MATH1', qrContent: 'SUBJECT:math1', publishDate: '', enableLocation: true, enableQRCode: true, enableCode: true },
@@ -109,7 +94,7 @@
     let adminMap = null, targetMarker = null;
     const $ = id => document.getElementById(id);
 
-    const channel = new BroadcastChannel('checkin_v5');
+    const channel = new BroadcastChannel('checkin_v7');
     channel.onmessage = (e) => { if(e.data.type==='data-updated') { loadFromLocal(); render(); } };
     function notifyChannel() { channel.postMessage({ type: 'data-updated' }); }
 
@@ -368,24 +353,14 @@
     function showTeacherSubjectDetail(subjectId) {
         const subj = subjects.find(s=>s.id===subjectId); if(!subj) return;
         const today = new Date().toISOString().split('T')[0];
-        const classId = subj.classId;
-        const allStudents = users.filter(u=>u.role==='student' && u.classId===classId).sort((a,b)=>(a.className||'').localeCompare(b.className||''));
+        const allStudents = users.filter(u=>u.role==='student' && u.classId===subj.classId).sort((a,b)=>(a.className||'').localeCompare(b.className||''));
         const signedIds = records.filter(r=>r.subjectId===subjectId && r.time?.startsWith(today)).map(r=>r.studentId);
-        const classesMap = {};
-        allStudents.forEach(stu => { const cls = stu.classId; if (!classesMap[cls]) classesMap[cls] = []; classesMap[cls].push(stu); });
+        const classesMap = {}; allStudents.forEach(stu => { const cls = stu.classId; if(!classesMap[cls]) classesMap[cls]=[]; classesMap[cls].push(stu); });
         let listHtml = '';
-        for (const [clsId, stus] of Object.entries(classesMap)) {
-            listHtml += `<div class="class-group"><div class="class-group-title">${getClassName(clsId)} (${stus.length}人)</div>`;
-            stus.forEach(stu => { const signed = signedIds.includes(stu.studentId); listHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`; });
-            listHtml += `</div>`;
-        }
+        for(const [clsId, stus] of Object.entries(classesMap)){ listHtml+=`<div class="class-group"><div class="class-group-title">${getClassName(clsId)} (${stus.length}人)</div>`; stus.forEach(stu=>{ const signed=signedIds.includes(stu.studentId); listHtml+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`; }); listHtml+='</div>'; }
         const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px; overflow-y:auto; margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportTeacherDetail">📥 导出Excel（按班级）</button>`;
         showModal(`${subj.name} 签到详情`, content);
-        $('exportTeacherDetail')?.addEventListener('click', ()=>{
-            let csv = '班级,姓名,学号,签到状态\n';
-            allStudents.forEach(stu => csv += `${getClassName(classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
-            downloadCSV(csv, `${subj.name}_签到明细.csv`);
-        });
+        $('exportTeacherDetail')?.addEventListener('click', ()=>{ let csv='班级,姓名,学号,签到状态\n'; allStudents.forEach(stu=> csv+=`${getClassName(subj.classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`); downloadCSV(csv,`${subj.name}_签到明细.csv`); });
     }
 
     function showInfoEditor() {
@@ -394,7 +369,7 @@
         $('closeInfoModal').addEventListener('click', closeModal);
     }
 
-    // ==================== 超管端 ====================
+    // ==================== 超管端（完整） ====================
     function renderSuperAdmin() {
         return `<div class="card profile-card">
             ${renderAvatar(currentUser.name)}
@@ -497,14 +472,15 @@
                 </div>
             </div>`).join('');
         container.querySelectorAll('.edit-class').forEach(b => b.addEventListener('click', async ()=>{
-            const id = b.dataset.id; const c = classes.find(x => x.id === id); if(!c) return;
+            const id = b.dataset.id; const c = classes.find(x=>x.id===id); if(!c) return;
             const newName = prompt('修改班级名称：', c.name);
             if(newName && newName.trim()) { c.name = newName.trim(); await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin(); }
         }));
         container.querySelectorAll('.manage-subjects').forEach(b => b.addEventListener('click', ()=>{ showClassSubjectsManager(b.dataset.id); }));
         container.querySelectorAll('.delete-class').forEach(b => b.addEventListener('click', async ()=>{
             if(classes.length <= 1) return toast('至少保留一个班级','warning');
-            const id = b.dataset.id; classes = classes.filter(c => c.id !== id); subjects = subjects.filter(s => s.classId !== id);
+            const id = b.dataset.id; classes = classes.filter(c=>c.id!==id);
+            subjects.forEach(s => { if(s.classId===id) s.classId = ''; });
             users.forEach(u => { if(u.role==='student' && u.classId===id) u.classId = ''; });
             await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin();
         }));
@@ -515,17 +491,47 @@
         const classSubjects = subjects.filter(s => s.classId === classId);
         let html = `<h3 style="margin-bottom:10px;">${className} 的学科</h3>`;
         if (classSubjects.length === 0) { html += '<p style="color:var(--text-light);">暂无学科</p>'; }
-        else { html += classSubjects.map(s => `<div class="flex-between" style="margin-bottom:6px;"><span>📗 ${s.name}</span><div class="gap-2"><button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button><button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button></div></div>`).join(''); }
-        html += `<button class="btn btn-sm btn-block mt-2" id="addSubjectToClass">➕ 新增学科</button>`;
+        else {
+            html += classSubjects.map(s => `
+                <div class="flex-between" style="margin-bottom:6px;">
+                    <span>📗 ${s.name}</span>
+                    <div class="gap-2">
+                        <button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button>
+                        <button class="btn btn-sm btn-warning remove-subject" data-id="${s.id}">移除</button>
+                        <button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button>
+                    </div>
+                </div>`).join('');
+        }
+        html += `<button class="btn btn-sm btn-block mt-2" id="assignSubjectToClass">➕ 分配学科</button>`;
         showModal(`班级学科管理 - ${className}`, html);
-        $('addSubjectToClass')?.addEventListener('click', async () => {
-            const name = prompt('学科名称：'); if(!name) return;
-            const id = Date.now().toString(36);
-            subjects.push({ id, name, classId, targetLat:39.9042, targetLng:116.4074, radius:500, checkinCode:name.substring(0,4).toUpperCase()+'2025', qrContent:'SUBJECT:'+id, publishDate:'', enableLocation:true, enableQRCode:true, enableCode:true });
-            await saveAllData(); closeModal(); showClassSubjectsManager(classId);
+
+        $('assignSubjectToClass')?.addEventListener('click', () => {
+            const otherSubjects = subjects.filter(s => s.classId !== classId);
+            if (otherSubjects.length === 0) return toast('没有可分配的其他学科','warning');
+            let selectHtml = '<select class="input" id="subjectSelect">';
+            otherSubjects.forEach(s => {
+                selectHtml += `<option value="${s.id}">${s.name}（当前班级：${getClassName(s.classId)||'无'}）</option>`;
+            });
+            selectHtml += '</select>';
+            showModal('选择要分配的学科', selectHtml + '<button class="btn btn-primary btn-block mt-2" id="confirmAssign">确认分配</button>');
+            $('confirmAssign')?.addEventListener('click', async () => {
+                const selectedSubjectId = $('subjectSelect').value;
+                if (!selectedSubjectId) return;
+                const subj = subjects.find(s => s.id === selectedSubjectId);
+                if (!subj) return;
+                if (subj.classId && subj.classId !== classId) {
+                    if (!confirm(`该学科目前属于「${getClassName(subj.classId)}」，确定要移到「${className}」吗？`)) return;
+                }
+                subj.classId = classId;
+                await saveAllData();
+                closeModal(); closeModal();
+                showClassSubjectsManager(classId);
+            });
         });
-        document.querySelectorAll('.edit-subject').forEach(b => b.addEventListener('click', ()=>{ closeModal(); openSubjectEditor(b.dataset.id, true); }));
-        document.querySelectorAll('.delete-subject').forEach(b => b.addEventListener('click', async ()=>{ if(subjects.length<=1) return toast('至少保留一个学科','warning'); subjects = subjects.filter(s => s.id !== b.dataset.id); await saveAllData(); closeModal(); showClassSubjectsManager(classId); }));
+
+        document.querySelectorAll('.edit-subject').forEach(b => b.addEventListener('click', () => { closeModal(); openSubjectEditor(b.dataset.id, true); }));
+        document.querySelectorAll('.remove-subject').forEach(b => b.addEventListener('click', async () => { const subj=subjects.find(s=>s.id===b.dataset.id); if(subj){ subj.classId=''; await saveAllData(); closeModal(); showClassSubjectsManager(classId); } }));
+        document.querySelectorAll('.delete-subject').forEach(b => b.addEventListener('click', async () => { if(!confirm('确定要删除该学科吗？')) return; if(subjects.length<=1) return toast('至少保留一个学科','warning'); subjects = subjects.filter(s=>s.id!==b.dataset.id); await saveAllData(); closeModal(); showClassSubjectsManager(classId); }));
     }
 
     function renderSubjectManage() {
@@ -538,7 +544,7 @@
         }).join('');
         container.querySelectorAll('.edit-subject').forEach(b=>b.addEventListener('click', ()=>openSubjectEditor(b.dataset.id, true)));
         container.querySelectorAll('.detail-subject').forEach(b=>b.addEventListener('click', ()=>showSubjectDetail(b.dataset.id)));
-        container.querySelectorAll('.delete-subject').forEach(b=>b.addEventListener('click', async ()=>{ if(subjects.length<=1) return toast('至少保留一个学科','warning'); subjects = subjects.filter(s=>s.id!==b.dataset.id); await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin(); }));
+        container.querySelectorAll('.delete-subject').forEach(b=>b.addEventListener('click', async ()=>{ if(subjects.length<=1) return toast('至少保留一个学科','warning'); subjects=subjects.filter(s=>s.id!==b.dataset.id); await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin(); }));
     }
 
     function showSubjectDetail(subjectId) {
