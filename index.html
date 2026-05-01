@@ -90,7 +90,7 @@
         });
     }
 
-    const KEYS = { users: 'cu_v2', records: 'cr_v2', subjects: 'cs_v2', classes: 'cl_v2', loginLogs: 'll_v2', session: 'csess_v2' };
+    const KEYS = { users: 'cu_v3', records: 'cr_v3', subjects: 'cs_v3', classes: 'cl_v3', loginLogs: 'll_v3', session: 'csess_v3' };
     const defaultClasses = [
         { id: 'class1', name: '软件1班' },
         { id: 'class2', name: '软件2班' }
@@ -113,7 +113,7 @@
     let adminMap = null, targetMarker = null;
     const $ = id => document.getElementById(id);
 
-    const channel = new BroadcastChannel('checkin_v2');
+    const channel = new BroadcastChannel('checkin_v3');
     channel.onmessage = (e) => { if(e.data.type==='data-updated') { loadFromLocal(); render(); } };
     function notifyChannel() { channel.postMessage({ type: 'data-updated' }); }
 
@@ -179,22 +179,11 @@
         save(user) { sessionStorage.setItem(KEYS.session, JSON.stringify(user)); },
         clear() { sessionStorage.removeItem(KEYS.session); currentUser=null; }
     };
-    function getAvatarColor(name) {
-        let hash=0; for(let i=0;i<name.length;i++) hash = name.charCodeAt(i)+((hash<<5)-hash);
-        const colors = ['#4f6ef7','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4'];
-        return colors[Math.abs(hash)%colors.length];
-    }
-    function renderAvatar(name) {
-        const initial = name ? name.charAt(name.length-1) : '?';
-        return `<div class="avatar" style="background:${getAvatarColor(name)};">${initial}</div>`;
-    }
+    function getAvatarColor(name) { let hash=0; for(let i=0;i<name.length;i++) hash = name.charCodeAt(i)+((hash<<5)-hash); const colors = ['#4f6ef7','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4']; return colors[Math.abs(hash)%colors.length]; }
+    function renderAvatar(name) { const initial = name ? name.charAt(name.length-1) : '?'; return `<div class="avatar" style="background:${getAvatarColor(name)};">${initial}</div>`; }
     function getClassName(classId) { const c = classes.find(x=>x.id===classId); return c ? c.name : '未知班级'; }
 
-    // 记录登录日志
-    async function addLoginLog(studentId, name, role) {
-        loginLogs.push({ studentId, name, role, time: new Date().toISOString() });
-        await saveAllData();
-    }
+    async function addLoginLog(studentId, name, role) { loginLogs.push({ studentId, name, role, time: new Date().toISOString() }); await saveAllData(); }
 
     function render() {
         const root = $('appRoot');
@@ -232,8 +221,7 @@
             if(user.password!==pwd) return toast('密码错误','error');
             currentUser = { studentId:user.studentId, name:user.name, role:user.role, subjectIds:user.subjectIds, classId:user.classId };
             session.save(currentUser);
-            // 记录登录日志
-            await addLoginLog(user.studentId, user.name, user.role);
+            if (user.role !== 'superadmin') await addLoginLog(user.studentId, user.name, user.role);
             render();
         });
         $('showRegister').addEventListener('click', e=>{ e.preventDefault(); $('registerPanel').style.display='block'; document.querySelector('.card').style.display='none'; });
@@ -276,49 +264,32 @@
             const myRecs = records.filter(r=>r.studentId===currentUser.studentId).slice(0,40);
             const html = myRecs.length ? myRecs.map(r=>`<div style="padding:10px;border-bottom:1px solid var(--border);">${r.subjectName||'未知'} · ${r.method} · ${formatTime(r.time)}</div>`).join('') : '暂无记录';
             showModal('我的签到记录', html + '<button class="btn btn-sm btn-block mt-2" id="exportMyRecords">📥 导出我的记录</button>');
-            $('exportMyRecords')?.addEventListener('click', ()=>{
-                let csv = '学科,方式,时间\n' + myRecs.map(r=>`${r.subjectName||''},${r.method},${r.time}`).join('\n');
-                downloadCSV(csv, '我的签到记录.csv');
-            });
+            $('exportMyRecords')?.addEventListener('click', ()=>{ let csv='学科,方式,时间\n'+myRecs.map(r=>`${r.subjectName||''},${r.method},${r.time}`).join('\n'); downloadCSV(csv,'我的签到记录.csv'); });
         });
     }
 
     function renderSubjectChips() {
-        const container = $('subjectChips');
-        const today = new Date().toISOString().split('T')[0];
-        const mySubjects = subjects.filter(s=>s.classId===currentUser.classId);
-        container.innerHTML = mySubjects.map(s=>{
-            const signed = records.some(r=>r.studentId===currentUser.studentId && r.subjectId===s.id && r.time?.startsWith(today));
-            const pub = s.publishDate === today;
-            let cls = selectedSubjectId===s.id ? 'active' : (signed?'checked':'');
+        const container=$('subjectChips'); const today=new Date().toISOString().split('T')[0];
+        const mySubjects=subjects.filter(s=>s.classId===currentUser.classId);
+        container.innerHTML=mySubjects.map(s=>{
+            const signed=records.some(r=>r.studentId===currentUser.studentId && r.subjectId===s.id && r.time?.startsWith(today));
+            const pub=s.publishDate===today; let cls=selectedSubjectId===s.id?'active':(signed?'checked':'');
             return `<div class="subject-chip ${cls}" data-id="${s.id}"><span>📗 ${s.name}</span><span style="font-size:0.8rem;">${signed?'✅ 已签':(pub?'📢 可签':'🔒 未发布')}</span></div>`;
         }).join('');
-        container.querySelectorAll('.subject-chip').forEach(chip=>{
-            chip.addEventListener('click', function(){
-                selectedSubjectId = this.dataset.id;
-                const subj = subjects.find(s=>s.id===selectedSubjectId);
-                if(!subj) return;
-                const already = records.some(r=>r.studentId===currentUser.studentId && r.subjectId===subj.id && r.time?.startsWith(new Date().toISOString().split('T')[0]));
-                container.querySelectorAll('.subject-chip').forEach(c=>c.classList.remove('active'));
-                this.classList.add('active');
-                if(already) { toast('今天该学科已签到','warning'); $('checkinActions').style.display='none'; return; }
-                showCheckinOptions(subj);
-            });
-        });
+        container.querySelectorAll('.subject-chip').forEach(chip=>{ chip.addEventListener('click', function(){ selectedSubjectId=this.dataset.id; const subj=subjects.find(s=>s.id===selectedSubjectId); if(!subj) return; const already=records.some(r=>r.studentId===currentUser.studentId && r.subjectId===subj.id && r.time?.startsWith(new Date().toISOString().split('T')[0])); container.querySelectorAll('.subject-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); if(already){ toast('今天该学科已签到','warning'); $('checkinActions').style.display='none'; return; } showCheckinOptions(subj); }); });
     }
 
     function showCheckinOptions(subj) {
-        const container = $('checkinActions');
-        const today = new Date().toISOString().split('T')[0];
-        if(subj.publishDate !== today) { container.innerHTML = '<div class="card text-center">该学科今日未发布签到</div>'; container.style.display='block'; return; }
-        let html = '<div class="checkin-grid">';
-        if(subj.enableLocation) html += `<div class="checkin-tile" id="locCheckin"><span class="icon">📍</span>位置签到</div>`;
-        if(subj.enableQRCode) html += `<div class="checkin-tile" id="qrCheckin"><span class="icon">📱</span>二维码签到</div>`;
-        if(subj.enableCode) html += `<div class="checkin-tile" id="codeCheckin"><span class="icon">🔢</span>签到码签到</div>`;
-        html += '</div>'; container.innerHTML = html; container.style.display='block';
-        if(subj.enableLocation) $('locCheckin').addEventListener('click', ()=>startLocationCheckin(subj));
-        if(subj.enableQRCode) $('qrCheckin').addEventListener('click', ()=>startQRCheckin(subj));
-        if(subj.enableCode) $('codeCheckin').addEventListener('click', ()=>startCodeCheckin(subj));
+        const container=$('checkinActions'); const today=new Date().toISOString().split('T')[0];
+        if(subj.publishDate!==today){ container.innerHTML='<div class="card text-center">该学科今日未发布签到</div>'; container.style.display='block'; return; }
+        let html='<div class="checkin-grid">';
+        if(subj.enableLocation) html+=`<div class="checkin-tile" id="locCheckin"><span class="icon">📍</span>位置签到</div>`;
+        if(subj.enableQRCode) html+=`<div class="checkin-tile" id="qrCheckin"><span class="icon">📱</span>二维码签到</div>`;
+        if(subj.enableCode) html+=`<div class="checkin-tile" id="codeCheckin"><span class="icon">🔢</span>签到码签到</div>`;
+        html+='</div>'; container.innerHTML=html; container.style.display='block';
+        if(subj.enableLocation) $('locCheckin').addEventListener('click',()=>startLocationCheckin(subj));
+        if(subj.enableQRCode) $('qrCheckin').addEventListener('click',()=>startQRCheckin(subj));
+        if(subj.enableCode) $('codeCheckin').addEventListener('click',()=>startCodeCheckin(subj));
     }
 
     async function addRecord(method, subj, loc=null) {
@@ -328,79 +299,23 @@
 
     function getUserLocation(success, error) {
         if(!navigator.geolocation) return error('浏览器不支持定位');
-        navigator.geolocation.getCurrentPosition(
-            pos=>success({ lat:pos.coords.latitude, lng:pos.coords.longitude }),
-            err=>{
-                let msg='定位失败';
-                if(err.code===1) msg='权限被拒绝，请在浏览器设置中允许';
-                else if(err.code===2) msg='无法获取位置';
-                else if(err.code===3) msg='定位超时';
-                error(msg);
-            },
-            { enableHighAccuracy:true, timeout:10000 }
-        );
+        navigator.geolocation.getCurrentPosition(pos=>success({ lat:pos.coords.latitude, lng:pos.coords.longitude }), err=>{ let msg='定位失败'; if(err.code===1) msg='权限被拒绝，请在浏览器设置中允许'; else if(err.code===2) msg='无法获取位置'; else if(err.code===3) msg='定位超时'; error(msg); }, { enableHighAccuracy:true, timeout:10000 });
     }
 
     function startLocationCheckin(subj) {
         showModal('📍 位置签到', `<div id="locInfo" class="text-center" style="padding:16px;">正在获取位置...</div><button class="btn btn-primary btn-block" id="getLocBtn">获取GPS并签到</button><p class="text-center mt-2" style="font-size:0.8rem;">有效范围：${subj.radius}米内</p><p class="text-center mt-2" style="font-size:0.75rem; color:var(--text-light);">无法定位？<a href="#" id="manualCoordBtn">手动输入坐标</a></p>`);
-        $('getLocBtn').addEventListener('click', ()=>{
-            getUserLocation(
-                pos=>{
-                    $('locInfo').innerHTML = `📍 ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`;
-                    const dist = haversine(pos.lat, pos.lng, subj.targetLat, subj.targetLng);
-                    if(dist<=subj.radius){ addRecord('位置签到', subj, { lat:pos.lat, lng:pos.lng, distance:Math.round(dist) }); toast('✅ 签到成功'); closeModal(); }
-                    else toast(`超出范围 (${dist.toFixed(0)}m)`,'error');
-                },
-                msg=>{ $('locInfo').innerHTML=`⚠️ ${msg}`; toast(msg,'error'); }
-            );
-        });
-        $('manualCoordBtn')?.addEventListener('click', e=>{
-            e.preventDefault();
-            const lat=prompt('请输入纬度：'), lng=prompt('请输入经度：');
-            if(lat&&lng){
-                const latNum=parseFloat(lat), lngNum=parseFloat(lng);
-                if(isNaN(latNum)||isNaN(lngNum)) return toast('经纬度格式错误','error');
-                $('locInfo').innerHTML = `📍 ${latNum.toFixed(4)}, ${lngNum.toFixed(4)}`;
-                const dist = haversine(latNum, lngNum, subj.targetLat, subj.targetLng);
-                if(dist<=subj.radius){ addRecord('位置签到', subj, { lat:latNum, lng:lngNum, distance:Math.round(dist) }); toast('✅ 签到成功'); closeModal(); }
-                else toast(`超出范围 (${dist.toFixed(0)}m)`,'error');
-            }
-        });
+        $('getLocBtn').addEventListener('click', ()=>{ getUserLocation(pos=>{ $('locInfo').innerHTML=`📍 ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`; const dist=haversine(pos.lat, pos.lng, subj.targetLat, subj.targetLng); if(dist<=subj.radius){ addRecord('位置签到', subj, { lat:pos.lat, lng:pos.lng, distance:Math.round(dist) }); toast('✅ 签到成功'); closeModal(); } else toast(`超出范围 (${dist.toFixed(0)}m)`,'error'); }, msg=>{ $('locInfo').innerHTML=`⚠️ ${msg}`; toast(msg,'error'); }); });
+        $('manualCoordBtn')?.addEventListener('click', e=>{ e.preventDefault(); const lat=prompt('请输入纬度：'), lng=prompt('请输入经度：'); if(lat&&lng){ const latNum=parseFloat(lat), lngNum=parseFloat(lng); if(isNaN(latNum)||isNaN(lngNum)) return toast('经纬度格式错误','error'); $('locInfo').innerHTML=`📍 ${latNum.toFixed(4)}, ${lngNum.toFixed(4)}`; const dist=haversine(latNum, lngNum, subj.targetLat, subj.targetLng); if(dist<=subj.radius){ addRecord('位置签到', subj, { lat:latNum, lng:lngNum, distance:Math.round(dist) }); toast('✅ 签到成功'); closeModal(); } else toast(`超出范围 (${dist.toFixed(0)}m)`,'error'); } });
     }
 
-    function startQRCheckin(subj) {
-        showModal('📱 二维码签到', `<div class="text-center" style="margin-bottom:16px;"><div id="qrCode"></div><p style="margin-top:8px;">内容：${subj.qrContent}</p></div><div id="qrScanner" style="display:none;"><div id="reader"></div><button class="btn btn-sm mt-2" id="stopScan">停止扫描</button></div><button class="btn btn-block mt-2" id="toggleScanBtn">切换到扫描</button>`);
-        new QRCode($('qrCode'), { text:subj.qrContent, width:140, height:140 });
-        let scanning=false, html5Qr;
-        $('toggleScanBtn').addEventListener('click', ()=>{
-            if(scanning) return;
-            scanning=true; $('qrScanner').style.display='block'; $('toggleScanBtn').style.display='none';
-            html5Qr = new Html5Qrcode("reader");
-            html5Qr.start({ facingMode:"environment" }, { fps:10, qrbox:{ width:200, height:200 } },
-                (decoded)=>{ if(decoded===subj.qrContent){ addRecord('二维码签到', subj); toast('✅ 签到成功'); html5Qr.stop(); closeModal(); } else toast('内容不匹配','error'); },
-                (err)=>{}
-            ).catch(()=>{ $('reader').innerHTML='摄像头不可用'; });
-        });
-        $('stopScan').addEventListener('click', ()=>{ if(html5Qr){ html5Qr.stop(); html5Qr=null; } scanning=false; $('qrScanner').style.display='none'; $('toggleScanBtn').style.display='block'; });
-    }
-
-    function startCodeCheckin(subj) {
-        showModal('🔢 签到码', `<input class="input" id="codeInput" placeholder="输入签到码" style="text-align:center; font-size:1.4rem; letter-spacing:0.2em;"><button class="btn btn-success btn-block mt-2" id="submitCode">确认签到</button><p class="text-center" style="font-size:0.8rem;">提示：${subj.checkinCode}</p>`);
-        $('submitCode').addEventListener('click', ()=>{ if($('codeInput').value.trim()===subj.checkinCode){ addRecord('签到码签到', subj); toast('✅ 签到成功'); closeModal(); } else toast('签到码错误','error'); });
-    }
+    function startQRCheckin(subj) { showModal('📱 二维码签到', `<div class="text-center" style="margin-bottom:16px;"><div id="qrCode"></div><p style="margin-top:8px;">内容：${subj.qrContent}</p></div><div id="qrScanner" style="display:none;"><div id="reader"></div><button class="btn btn-sm mt-2" id="stopScan">停止扫描</button></div><button class="btn btn-block mt-2" id="toggleScanBtn">切换到扫描</button>`); new QRCode($('qrCode'),{text:subj.qrContent,width:140,height:140}); let scanning=false,html5Qr; $('toggleScanBtn').addEventListener('click',()=>{ if(scanning) return; scanning=true; $('qrScanner').style.display='block'; $('toggleScanBtn').style.display='none'; html5Qr=new Html5Qrcode("reader"); html5Qr.start({facingMode:"environment"},{fps:10,qrbox:{width:200,height:200}},(decoded)=>{ if(decoded===subj.qrContent){ addRecord('二维码签到',subj); toast('✅ 签到成功'); html5Qr.stop(); closeModal(); } else toast('内容不匹配','error'); },(err)=>{}).catch(()=>{ $('reader').innerHTML='摄像头不可用'; }); }); $('stopScan').addEventListener('click',()=>{ if(html5Qr){ html5Qr.stop(); html5Qr=null; } scanning=false; $('qrScanner').style.display='none'; $('toggleScanBtn').style.display='block'; }); }
+    function startCodeCheckin(subj) { showModal('🔢 签到码', `<input class="input" id="codeInput" placeholder="输入签到码" style="text-align:center; font-size:1.4rem; letter-spacing:0.2em;"><button class="btn btn-success btn-block mt-2" id="submitCode">确认签到</button><p class="text-center" style="font-size:0.8rem;">提示：${subj.checkinCode}</p>`); $('submitCode').addEventListener('click',()=>{ if($('codeInput').value.trim()===subj.checkinCode){ addRecord('签到码签到',subj); toast('✅ 签到成功'); closeModal(); } else toast('签到码错误','error'); }); }
 
     function showModal(title, content) {
-        const overlay = document.createElement('div'); overlay.className='modal-overlay';
-        overlay.innerHTML = `<div class="modal-sheet"><div class="modal-handle"></div><h2 class="modal-title">${title}</h2>${content}</div>`;
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
-        window.closeModal = ()=>overlay.remove();
+        const overlay=document.createElement('div'); overlay.className='modal-overlay'; overlay.innerHTML=`<div class="modal-sheet"><div class="modal-handle"></div><h2 class="modal-title">${title}</h2>${content}</div>`; document.body.appendChild(overlay); overlay.addEventListener('click',e=>{ if(e.target===overlay) closeModal(); }); window.closeModal=()=>overlay.remove();
     }
 
-    function downloadCSV(csvContent, fileName) {
-        const blob = new Blob(['\uFEFF'+csvContent], {type:'text/csv;charset=utf-8;'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
-    }
+    function downloadCSV(csvContent, fileName) { const blob=new Blob(['\uFEFF'+csvContent],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileName; a.click(); }
 
     // ========== 教师端 ==========
     function renderTeacher() {
@@ -452,50 +367,47 @@
             });
             chip.querySelector('.detail-btn')?.addEventListener('click', ()=>showTeacherSubjectDetail(id));
         });
-        document.querySelectorAll('.switch-input').forEach(input=>{
-            input.addEventListener('change', async function(){
-                const subjectId = this.closest('[data-subject-id]').dataset.subjectId;
-                const field = this.dataset.field;
-                const subj = subjects.find(s=>s.id===subjectId);
-                if(subj) { subj[field] = this.checked; await saveAllData(); }
-            });
-        });
+        document.querySelectorAll('.switch-input').forEach(input=>{ input.addEventListener('change', async function(){ const subjectId=this.closest('[data-subject-id]').dataset.subjectId; const field=this.dataset.field; const subj=subjects.find(s=>s.id===subjectId); if(subj){ subj[field]=this.checked; await saveAllData(); } }); });
     }
 
     function showTeacherSubjectDetail(subjectId) {
         const subj = subjects.find(s=>s.id===subjectId); if(!subj) return;
         const today = new Date().toISOString().split('T')[0];
-        const allStudents = users.filter(u=>u.role==='student' && u.classId===subj.classId).sort((a,b)=>(a.className||'').localeCompare(b.className||''));
+        const classId = subj.classId;
+        const allStudents = users.filter(u=>u.role==='student' && u.classId===classId).sort((a,b)=>(a.className||'').localeCompare(b.className||''));
         const signedIds = records.filter(r=>r.subjectId===subjectId && r.time?.startsWith(today)).map(r=>r.studentId);
-        const listHtml = allStudents.map(stu=>{
-            const signed = signedIds.includes(stu.studentId);
-            return `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`;
-        }).join('');
-        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p>
-            <div style="max-height:300px; overflow-y:auto; margin-top:12px;">${listHtml}</div>
-            <button class="btn btn-sm btn-block mt-2" id="exportTeacherDetail">📥 导出Excel（按班级）</button>`;
+        // 按班级分组显示（尽管只有一个班级）
+        const classesMap = {};
+        allStudents.forEach(stu => {
+            const cls = stu.classId;
+            if (!classesMap[cls]) classesMap[cls] = [];
+            classesMap[cls].push(stu);
+        });
+        let listHtml = '';
+        for (const [clsId, stus] of Object.entries(classesMap)) {
+            listHtml += `<div class="class-group"><div class="class-group-title">${getClassName(clsId)} (${stus.length}人)</div>`;
+            stus.forEach(stu => {
+                const signed = signedIds.includes(stu.studentId);
+                listHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`;
+            });
+            listHtml += `</div>`;
+        }
+        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px; overflow-y:auto; margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportTeacherDetail">📥 导出Excel（按班级）</button>`;
         showModal(`${subj.name} 签到详情`, content);
         $('exportTeacherDetail')?.addEventListener('click', ()=>{
             let csv = '班级,姓名,学号,签到状态\n';
-            allStudents.forEach(stu=> csv += `${getClassName(subj.classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
+            allStudents.forEach(stu => csv += `${getClassName(classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
             downloadCSV(csv, `${subj.name}_签到明细.csv`);
         });
     }
 
     function showInfoEditor() {
         showModal('修改个人信息', `<div class="input-group"><label>姓名</label><input class="input" id="editName" value="${currentUser.name}"></div><div class="input-group"><label>学号</label><input class="input" id="editId" value="${currentUser.studentId}"></div><div class="input-group"><label>新密码</label><input class="input" type="password" id="editPwd" placeholder="留空不修改"></div><button class="btn btn-primary btn-block" id="saveInfo">保存</button><button class="btn btn-block mt-2" id="closeInfoModal">返回</button>`);
-        $('saveInfo').addEventListener('click', async ()=>{
-            const name=$('editName').value.trim(), id=$('editId').value.trim(), pwd=$('editPwd').value;
-            if(!name||!id) return toast('姓名学号必填','error');
-            const user = users.find(u=>u.studentId===currentUser.studentId);
-            if(user){ user.name=name; user.studentId=id; if(pwd) user.password=pwd; }
-            currentUser.name=name; currentUser.studentId=id;
-            session.save(currentUser); await saveAllData(); toast('已更新'); closeModal(); render();
-        });
+        $('saveInfo').addEventListener('click', async ()=>{ const name=$('editName').value.trim(), id=$('editId').value.trim(), pwd=$('editPwd').value; if(!name||!id) return toast('姓名学号必填','error'); const user=users.find(u=>u.studentId===currentUser.studentId); if(user){ user.name=name; user.studentId=id; if(pwd) user.password=pwd; } currentUser.name=name; currentUser.studentId=id; session.save(currentUser); await saveAllData(); toast('已更新'); closeModal(); render(); });
         $('closeInfoModal').addEventListener('click', closeModal);
     }
 
-    // ========== 超管端（增加登录日志查看） ==========
+    // ========== 超管端 ==========
     function renderSuperAdmin() {
         return `<div class="card profile-card">
             ${renderAvatar(currentUser.name)}
@@ -524,226 +436,30 @@
         $('logoutBtn').addEventListener('click', ()=>{ session.clear(); render(); });
         renderClassList(); renderSubjectManage(); renderTeacherTableForAdmin(); renderStudentTableForAdmin();
         $('refreshAdminBtn').addEventListener('click', refreshData);
-        $('addClassBtn').addEventListener('click', async ()=>{
-            const name = prompt('班级名称：'); if(!name) return;
-            const id = Date.now().toString(36);
-            classes.push({ id, name });
-            await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin();
-        });
-        $('addSubjectBtn').addEventListener('click', async ()=>{
-            if(classes.length===0) return toast('请先创建班级','warning');
-            const name = prompt('学科名称：'); if(!name) return;
-            const classId = prompt('所属班级ID（可选班级：\n'+classes.map(c=>`${c.name} (${c.id})`).join('\n')+'）');
-            if(!classId || !classes.some(c=>c.id===classId)) return toast('班级无效','error');
-            const id = Date.now().toString(36);
-            subjects.push({ id, name, classId, targetLat:39.9042, targetLng:116.4074, radius:500, checkinCode:name.substring(0,4).toUpperCase()+'2025', qrContent:'SUBJECT:'+id, publishDate:'', enableLocation:true, enableQRCode:true, enableCode:true });
-            await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin();
-        });
-        $('addTeacherBtn').addEventListener('click', async ()=>{
-            const id = prompt('教师学号：'); if(!id || users.some(u=>u.studentId===id)) return toast('学号无效或已存在','error');
-            const name = prompt('姓名：'); const pwd = prompt('密码（默认123456）：','123456');
-            users.push({ studentId:id, name, password:pwd||'123456', role:'teacher', subjectIds:[], classId:'' });
-            await saveAllData(); renderTeacherTableForAdmin();
-        });
-        $('addStudentBtn').addEventListener('click', async ()=>{
-            const id = prompt('学生学号：'); if(!id || users.some(u=>u.studentId===id)) return toast('学号无效或已存在','error');
-            const name = prompt('姓名：'); const classId = prompt('班级ID：\n'+classes.map(c=>`${c.name} (${c.id})`).join('\n'));
-            if(!classId || !classes.some(c=>c.id===classId)) return toast('班级无效','error');
-            users.push({ studentId:id, name, password:'123456', role:'student', classId });
-            await saveAllData(); renderStudentTableForAdmin();
-        });
+        $('addClassBtn').addEventListener('click', async ()=>{ const name=prompt('班级名称：'); if(!name) return; const id=Date.now().toString(36); classes.push({id,name}); await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin(); });
+        $('addSubjectBtn').addEventListener('click', async ()=>{ if(classes.length===0) return toast('请先创建班级','warning'); const name=prompt('学科名称：'); if(!name) return; const classId=prompt('所属班级ID（可选班级：\n'+classes.map(c=>`${c.name} (${c.id})`).join('\n')+'）'); if(!classId || !classes.some(c=>c.id===classId)) return toast('班级无效','error'); const id=Date.now().toString(36); subjects.push({id,name,classId,targetLat:39.9042,targetLng:116.4074,radius:500,checkinCode:name.substring(0,4).toUpperCase()+'2025',qrContent:'SUBJECT:'+id,publishDate:'',enableLocation:true,enableQRCode:true,enableCode:true}); await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin(); });
+        $('addTeacherBtn').addEventListener('click', async ()=>{ const id=prompt('教师学号：'); if(!id || users.some(u=>u.studentId===id)) return toast('学号无效或已存在','error'); const name=prompt('姓名：'); const pwd=prompt('密码（默认123456）：','123456'); users.push({studentId:id,name,password:pwd||'123456',role:'teacher',subjectIds:[],classId:''}); await saveAllData(); renderTeacherTableForAdmin(); });
+        $('addStudentBtn').addEventListener('click', async ()=>{ const id=prompt('学生学号：'); if(!id || users.some(u=>u.studentId===id)) return toast('学号无效或已存在','error'); const name=prompt('姓名：'); const classId=prompt('班级ID：\n'+classes.map(c=>`${c.name} (${c.id})`).join('\n')); if(!classId || !classes.some(c=>c.id===classId)) return toast('班级无效','error'); users.push({studentId:id,name,password:'123456',role:'student',classId}); await saveAllData(); renderStudentTableForAdmin(); });
         $('excelUpload').addEventListener('change', handleExcel);
-        $('allRecordsBtn').addEventListener('click', ()=>{
-            const allRecs = records.slice(0,200).map(r=>`<div style="padding:8px;border-bottom:1px solid var(--border);">${r.subjectName||'未知'} | ${r.name} · ${r.method} · ${formatTime(r.time)}</div>`).join('') || '暂无';
-            showModal('全部签到记录', `<div style="max-height:400px;overflow-y:auto;">${allRecs}</div><button class="btn btn-sm btn-block mt-2" id="exportAllRecords">📥 导出全部记录</button>`);
-            $('exportAllRecords')?.addEventListener('click', ()=>{
-                let csv = '学科,姓名,学号,方式,时间\n';
-                records.forEach(r=> csv += `${r.subjectName||''},${r.name},${r.studentId},${r.method},${r.time}\n`);
-                downloadCSV(csv, '全部签到记录.csv');
-            });
-        });
-        $('loginLogsBtn').addEventListener('click', ()=>{
-            const logsHtml = loginLogs.length ? loginLogs.map(l=>`<div style="padding:8px;border-bottom:1px solid var(--border);">${l.name} (${l.studentId}) - ${l.role} - ${formatTime(l.time)}</div>`).join('') : '暂无登录日志';
-            showModal('登录日志', `<div style="max-height:400px;overflow-y:auto;">${logsHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportLogsBtn">📥 导出日志</button>`);
-            $('exportLogsBtn')?.addEventListener('click', ()=>{
-                let csv = '学号,姓名,角色,时间\n';
-                loginLogs.forEach(l=> csv += `${l.studentId},${l.name},${l.role},${l.time}\n`);
-                downloadCSV(csv, '登录日志.csv');
-            });
-        });
-        $('exportBtn').addEventListener('click', ()=>{
-            const data = { users, subjects, records, classes, loginLogs };
-            const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `签到备份_${new Date().toISOString().split('T')[0]}.json`; a.click();
-        });
-        $('restoreFile').addEventListener('change', (e)=>{
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async (ev)=>{
-                try {
-                    const data = JSON.parse(ev.target.result);
-                    if(data.users&&data.subjects&&data.records&&data.classes){
-                        if(confirm('恢复数据将覆盖当前所有信息，确定继续吗？')){
-                            users=data.users; subjects=data.subjects; records=data.records; classes=data.classes; loginLogs=data.loginLogs||[];
-                            await saveAllData(); render(); toast('数据已恢复');
-                        }
-                    } else toast('无效备份','error');
-                } catch { toast('格式错误','error'); }
-            };
-            reader.readAsText(file);
-        });
+        $('allRecordsBtn').addEventListener('click', ()=>{ const allRecs=records.slice(0,200).map(r=>`<div style="padding:8px;border-bottom:1px solid var(--border);">${r.subjectName||'未知'} | ${r.name} · ${r.method} · ${formatTime(r.time)}</div>`).join('')||'暂无'; showModal('全部签到记录',`<div style="max-height:400px;overflow-y:auto;">${allRecs}</div><button class="btn btn-sm btn-block mt-2" id="exportAllRecords">📥 导出全部记录</button>`); $('exportAllRecords')?.addEventListener('click',()=>{ let csv='学科,姓名,学号,方式,时间\n'; records.forEach(r=> csv+=`${r.subjectName||''},${r.name},${r.studentId},${r.method},${r.time}\n`); downloadCSV(csv,'全部签到记录.csv'); }); });
+        $('loginLogsBtn').addEventListener('click', ()=>{ const logsHtml=loginLogs.length?loginLogs.map(l=>`<div style="padding:8px;border-bottom:1px solid var(--border);">${l.name} (${l.studentId}) - ${l.role} - ${formatTime(l.time)}</div>`).join(''):'暂无登录日志'; showModal('登录日志',`<div style="max-height:400px;overflow-y:auto;">${logsHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportLogsBtn">📥 导出日志</button>`); $('exportLogsBtn')?.addEventListener('click',()=>{ let csv='学号,姓名,角色,时间\n'; loginLogs.forEach(l=> csv+=`${l.studentId},${l.name},${l.role},${l.time}\n`); downloadCSV(csv,'登录日志.csv'); }); });
+        $('exportBtn').addEventListener('click', ()=>{ const data={users,subjects,records,classes,loginLogs}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`签到备份_${new Date().toISOString().split('T')[0]}.json`; a.click(); });
+        $('restoreFile').addEventListener('change', (e)=>{ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=async(ev)=>{ try{ const data=JSON.parse(ev.target.result); if(data.users&&data.subjects&&data.records&&data.classes){ if(confirm('恢复数据将覆盖当前所有信息，确定继续吗？')){ users=data.users; subjects=data.subjects; records=data.records; classes=data.classes; loginLogs=data.loginLogs||[]; await saveAllData(); render(); toast('数据已恢复'); } } else toast('无效备份','error'); } catch{ toast('格式错误','error'); } }; reader.readAsText(file); });
     }
 
-    function renderClassList() {
-        const container = $('classList');
-        container.innerHTML = classes.map(c=>`<div class="flex-between" style="margin-bottom:8px;"><span>🏫 ${c.name}</span><button class="btn btn-sm btn-danger" data-id="${c.id}">删除</button></div>`).join('');
-        container.querySelectorAll('.btn-danger').forEach(b=>b.addEventListener('click', async ()=>{
-            if(classes.length<=1) return toast('至少保留一个班级','warning');
-            const id = b.dataset.id;
-            classes = classes.filter(c=>c.id!==id);
-            subjects = subjects.filter(s=>s.classId!==id);
-            users.forEach(u=>{ if(u.role==='student' && u.classId===id) u.classId = ''; });
-            await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin();
-        }));
-    }
-
-    function renderSubjectManage() {
-        const container = $('subjectList');
-        const today = new Date().toISOString().split('T')[0];
-        container.innerHTML = subjects.map(s=>{
-            const totalStudents = users.filter(u=>u.role==='student' && u.classId===s.classId).length;
-            const signed = records.filter(r=>r.subjectId===s.id && r.time?.startsWith(today)).length;
-            return `<div class="flex-between" style="margin-bottom:8px;"><div><span>📘 ${s.name}</span> <small style="color:var(--text-light);">${getClassName(s.classId)}</small> <span style="font-size:0.75rem; color:var(--text-light);">应到${totalStudents} 实到${signed}</span></div>
-            <div class="gap-2"><button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button><button class="btn btn-sm detail-subject" data-id="${s.id}">详情</button><button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button></div></div>`;
-        }).join('');
-        container.querySelectorAll('.edit-subject').forEach(b=>b.addEventListener('click', ()=>openSubjectEditor(b.dataset.id, true)));
-        container.querySelectorAll('.detail-subject').forEach(b=>b.addEventListener('click', ()=>showSubjectDetail(b.dataset.id)));
-        container.querySelectorAll('.delete-subject').forEach(b=>b.addEventListener('click', async ()=>{
-            if(subjects.length<=1) return toast('至少保留一个学科','warning');
-            subjects = subjects.filter(s=>s.id!==b.dataset.id);
-            await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin();
-        }));
-    }
-
-    function showSubjectDetail(subjectId) {
-        const subj = subjects.find(s=>s.id===subjectId); if(!subj) return;
-        const today = new Date().toISOString().split('T')[0];
-        const allStudents = users.filter(u=>u.role==='student' && u.classId===subj.classId).sort((a,b)=>(a.className||'').localeCompare(b.className||''));
-        const signedIds = records.filter(r=>r.subjectId===subjectId && r.time?.startsWith(today)).map(r=>r.studentId);
-        const listHtml = allStudents.map(stu=>{
-            const signed = signedIds.includes(stu.studentId);
-            return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`;
-        }).join('');
-        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportSubjectDetail">📥 导出Excel</button>`;
-        showModal(`${subj.name} 签到详情`, content);
-        $('exportSubjectDetail')?.addEventListener('click', ()=>{
-            let csv = '班级,姓名,学号,签到状态\n';
-            allStudents.forEach(stu=> csv += `${getClassName(subj.classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
-            downloadCSV(csv, `${subj.name}_签到明细.csv`);
-        });
-    }
-
-    function renderTeacherTableForAdmin() {
-        const container = $('teacherTable');
-        const teachers = users.filter(u=>u.role==='teacher');
-        container.innerHTML = teachers.length ? `<table class="mini-table"><tr><th>学号</th><th>姓名</th><th>负责学科</th><th>操作</th></tr>
-            ${teachers.map(t=>`<tr><td>${t.studentId}</td><td>${t.name}</td>
-            <td>${(t.subjectIds||[]).map(id=>subjects.find(s=>s.id===id)?.name||'').join(', ')||'未分配'}</td>
-            <td><button class="btn btn-sm assign-teacher" data-id="${t.studentId}">分配</button><button class="btn btn-sm detail-teacher" data-id="${t.studentId}">详情</button><button class="btn btn-sm btn-danger delete-user" data-id="${t.studentId}">删除</button></td></tr>`).join('')}</table>` : '<p>暂无教师</p>';
-        container.querySelectorAll('.assign-teacher').forEach(b=>b.addEventListener('click', ()=>assignTeacher(b.dataset.id)));
-        container.querySelectorAll('.detail-teacher').forEach(b=>b.addEventListener('click', ()=>showTeacherDetail(b.dataset.id)));
-        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{ users = users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderTeacherTableForAdmin(); renderStudentTableForAdmin(); }));
-    }
-
-    function assignTeacher(teacherId) {
-        const list = subjects.map(s=>`${s.name} (${s.id}) - ${getClassName(s.classId)}`).join('\n');
-        const subjId = prompt('输入学科ID:\n'+list);
-        if(!subjId || !subjects.some(s=>s.id===subjId)) return toast('学科不存在','error');
-        const teacher = users.find(u=>u.studentId===teacherId);
-        if(!teacher.subjectIds) teacher.subjectIds = [];
-        if(teacher.subjectIds.includes(subjId)) return toast('已分配','warning');
-        teacher.subjectIds.push(subjId);
-        saveAllData(); renderTeacherTableForAdmin(); renderSubjectManage();
-    }
-
-    function showTeacherDetail(teacherId) {
-        const teacher = users.find(u=>u.studentId===teacherId); if(!teacher) return;
-        const subjectNames = (teacher.subjectIds||[]).map(id=>{
-            const s = subjects.find(x=>x.id===id);
-            return s ? `${s.name} (${getClassName(s.classId)})` : '';
-        }).filter(Boolean).join(', ') || '未分配';
-        const today = new Date().toISOString().split('T')[0];
-        const relevantRecords = records.filter(r=>teacher.subjectIds?.includes(r.subjectId));
-        const todayCount = relevantRecords.filter(r=>r.time?.startsWith(today)).length;
-        const content = `<div style="line-height:1.8;"><p><strong>姓名：</strong>${teacher.name}</p><p><strong>学号：</strong>${teacher.studentId}</p><p><strong>负责学科：</strong>${subjectNames}</p><p><strong>今日签到人次：</strong>${todayCount}</p></div>`;
-        showModal(`教师详情：${teacher.name}`, content);
-    }
-
-    function renderStudentTableForAdmin() {
-        const container = $('studentTable');
-        const students = users.filter(u=>u.role==='student');
-        container.innerHTML = students.length ? `<table class="mini-table"><tr><th>学号</th><th>姓名</th><th>班级</th><th>操作</th></tr>
-            ${students.map(s=>`<tr>
-                <td>${s.studentId}</td><td>${s.name}</td>
-                <td><select class="input class-select" data-id="${s.studentId}">${classes.map(c=>`<option value="${c.id}" ${s.classId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></td>
-                <td><button class="btn btn-sm detail-student" data-id="${s.studentId}">详情</button><button class="btn btn-sm btn-danger delete-user" data-id="${s.studentId}">删除</button></td>
-            </tr>`).join('')}</table>` : '<p>暂无学生</p>';
-        container.querySelectorAll('.class-select').forEach(sel=>sel.addEventListener('change', async function(){
-            const user = users.find(u=>u.studentId===this.dataset.id);
-            if(user){ user.classId = this.value; await saveAllData(); }
-        }));
-        container.querySelectorAll('.detail-student').forEach(b=>b.addEventListener('click', ()=>showStudentDetailForAdmin(b.dataset.id)));
-        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{ users = users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderStudentTableForAdmin(); }));
-    }
-
-    function showStudentDetailForAdmin(studentId) {
-        const stu = users.find(u=>u.studentId===studentId); if(!stu) return;
-        const myRecs = records.filter(r=>r.studentId===studentId).slice(0,50);
-        const listHtml = myRecs.length ? myRecs.map(r=>`<div style="padding:8px;border-bottom:1px solid #eee;">${r.subjectName||'未知'} · ${r.method} · ${formatTime(r.time)}</div>`).join('') : '暂无记录';
-        const content = `<p><strong>姓名：</strong>${stu.name}</p><p><strong>学号：</strong>${stu.studentId}</p><p><strong>班级：</strong>${getClassName(stu.classId)}</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div>`;
-        showModal(`学生详情：${stu.name}`, content);
-    }
-
-    async function handleExcel(e) {
-        const file = e.target.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = async (ev)=>{
-            const data = new Uint8Array(ev.target.result);
-            const wb = XLSX.read(data, {type:'array'});
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-            if(rows.length<2) return toast('至少两行','error');
-            const hdr = rows[0].map(h=>String(h).trim());
-            const idIdx = hdr.findIndex(h=>h==='学号'||h==='studentId');
-            const nameIdx = hdr.findIndex(h=>h==='姓名'||h==='name');
-            const classIdx = hdr.findIndex(h=>h==='班级'||h==='className');
-            if(idIdx===-1||nameIdx===-1) return toast('需学号、姓名列','error');
-            let cnt=0;
-            for(let i=1;i<rows.length;i++){
-                const sid=String(rows[i][idIdx]||'').trim(), sname=String(rows[i][nameIdx]||'').trim();
-                let sclass = classIdx!==-1 ? String(rows[i][classIdx]||'').trim() : '';
-                if(sclass && !classes.some(c=>c.name===sclass)){
-                    const newClassId = Date.now().toString(36);
-                    classes.push({ id:newClassId, name:sclass });
-                    sclass = newClassId;
-                } else if(sclass){
-                    const existing = classes.find(c=>c.name===sclass);
-                    if(existing) sclass = existing.id;
-                }
-                if(sid&&sname&&!users.find(u=>u.studentId===sid)){
-                    users.push({ studentId:sid, name:sname, password:'123456', role:'student', classId:sclass||'' });
-                    cnt++;
-                }
-            }
-            if(cnt>0){ await saveAllData(); renderStudentTableForAdmin(); }
-            toast(`导入${cnt}人`);
-        };
-        reader.readAsArrayBuffer(file);
-    }
+    function renderClassList() { const container=$('classList'); container.innerHTML=classes.map(c=>`<div class="flex-between" style="margin-bottom:8px;"><span>🏫 ${c.name}</span><button class="btn btn-sm btn-danger" data-id="${c.id}">删除</button></div>`).join(''); container.querySelectorAll('.btn-danger').forEach(b=>b.addEventListener('click',async()=>{ if(classes.length<=1) return toast('至少保留一个班级','warning'); const id=b.dataset.id; classes=classes.filter(c=>c.id!==id); subjects=subjects.filter(s=>s.classId!==id); users.forEach(u=>{ if(u.role==='student' && u.classId===id) u.classId=''; }); await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin(); })); }
+    function renderSubjectManage() { const container=$('subjectList'); const today=new Date().toISOString().split('T')[0]; container.innerHTML=subjects.map(s=>{ const totalStudents=users.filter(u=>u.role==='student' && u.classId===s.classId).length; const signed=records.filter(r=>r.subjectId===s.id && r.time?.startsWith(today)).length; return `<div class="flex-between" style="margin-bottom:8px;"><div><span>📘 ${s.name}</span> <small style="color:var(--text-light);">${getClassName(s.classId)}</small> <span style="font-size:0.75rem; color:var(--text-light);">应到${totalStudents} 实到${signed}</span></div><div class="gap-2"><button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button><button class="btn btn-sm detail-subject" data-id="${s.id}">详情</button><button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button></div></div>`; }).join(''); container.querySelectorAll('.edit-subject').forEach(b=>b.addEventListener('click',()=>openSubjectEditor(b.dataset.id,true))); container.querySelectorAll('.detail-subject').forEach(b=>b.addEventListener('click',()=>showSubjectDetail(b.dataset.id))); container.querySelectorAll('.delete-subject').forEach(b=>b.addEventListener('click',async()=>{ if(subjects.length<=1) return toast('至少保留一个学科','warning'); subjects=subjects.filter(s=>s.id!==b.dataset.id); await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin(); })); }
+    function showSubjectDetail(subjectId) { const subj=subjects.find(s=>s.id===subjectId); if(!subj) return; const today=new Date().toISOString().split('T')[0]; const allStudents=users.filter(u=>u.role==='student' && u.classId===subj.classId).sort((a,b)=>(a.className||'').localeCompare(b.className||'')); const signedIds=records.filter(r=>r.subjectId===subjectId && r.time?.startsWith(today)).map(r=>r.studentId); const classesMap={}; allStudents.forEach(stu=>{ const cls=stu.classId; if(!classesMap[cls]) classesMap[cls]=[]; classesMap[cls].push(stu); }); let listHtml=''; for(const [clsId,stus] of Object.entries(classesMap)){ listHtml+=`<div class="class-group"><div class="class-group-title">${getClassName(clsId)} (${stus.length}人)</div>`; stus.forEach(stu=>{ const signed=signedIds.includes(stu.studentId); listHtml+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`; }); listHtml+='</div>'; } const content=`<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportSubjectDetail">📥 导出Excel（按班级）</button>`; showModal(`${subj.name} 签到详情`,content); $('exportSubjectDetail')?.addEventListener('click',()=>{ let csv='班级,姓名,学号,签到状态\n'; allStudents.forEach(stu=> csv+=`${getClassName(subj.classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`); downloadCSV(csv,`${subj.name}_签到明细.csv`); }); }
+    function renderTeacherTableForAdmin() { const container=$('teacherTable'); const teachers=users.filter(u=>u.role==='teacher'); container.innerHTML=teachers.length?`<table class="mini-table"><tr><th>学号</th><th>姓名</th><th>负责学科</th><th>操作</th></tr>${teachers.map(t=>`<tr><td>${t.studentId}</td><td>${t.name}</td><td>${(t.subjectIds||[]).map(id=>subjects.find(s=>s.id===id)?.name||'').join(', ')||'未分配'}</td><td><button class="btn btn-sm assign-teacher" data-id="${t.studentId}">分配</button><button class="btn btn-sm detail-teacher" data-id="${t.studentId}">详情</button><button class="btn btn-sm btn-danger delete-user" data-id="${t.studentId}">删除</button></td></tr>`).join('')}</table>`:'<p>暂无教师</p>'; container.querySelectorAll('.assign-teacher').forEach(b=>b.addEventListener('click',()=>assignTeacher(b.dataset.id))); container.querySelectorAll('.detail-teacher').forEach(b=>b.addEventListener('click',()=>showTeacherDetail(b.dataset.id))); container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click',async()=>{ users=users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderTeacherTableForAdmin(); renderStudentTableForAdmin(); })); }
+    function assignTeacher(teacherId) { const list=subjects.map(s=>`${s.name} (${s.id}) - ${getClassName(s.classId)}`).join('\n'); const subjId=prompt('输入学科ID:\n'+list); if(!subjId || !subjects.some(s=>s.id===subjId)) return toast('学科不存在','error'); const teacher=users.find(u=>u.studentId===teacherId); if(!teacher.subjectIds) teacher.subjectIds=[]; if(teacher.subjectIds.includes(subjId)) return toast('已分配','warning'); teacher.subjectIds.push(subjId); saveAllData(); renderTeacherTableForAdmin(); renderSubjectManage(); }
+    function showTeacherDetail(teacherId) { const teacher=users.find(u=>u.studentId===teacherId); if(!teacher) return; const subjectNames=(teacher.subjectIds||[]).map(id=>{ const s=subjects.find(x=>x.id===id); return s?`${s.name} (${getClassName(s.classId)})`:''; }).filter(Boolean).join(', ')||'未分配'; const today=new Date().toISOString().split('T')[0]; const relevantRecords=records.filter(r=>teacher.subjectIds?.includes(r.subjectId)); const todayCount=relevantRecords.filter(r=>r.time?.startsWith(today)).length; const content=`<div style="line-height:1.8;"><p><strong>姓名：</strong>${teacher.name}</p><p><strong>学号：</strong>${teacher.studentId}</p><p><strong>负责学科：</strong>${subjectNames}</p><p><strong>今日签到人次：</strong>${todayCount}</p></div>`; showModal(`教师详情：${teacher.name}`,content); }
+    function renderStudentTableForAdmin() { const container=$('studentTable'); const students=users.filter(u=>u.role==='student'); container.innerHTML=students.length?`<table class="mini-table"><tr><th>学号</th><th>姓名</th><th>班级</th><th>操作</th></tr>${students.map(s=>`<tr><td>${s.studentId}</td><td>${s.name}</td><td><select class="input class-select" data-id="${s.studentId}">${classes.map(c=>`<option value="${c.id}" ${s.classId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></td><td><button class="btn btn-sm detail-student" data-id="${s.studentId}">详情</button><button class="btn btn-sm btn-danger delete-user" data-id="${s.studentId}">删除</button></td></tr>`).join('')}</table>`:'<p>暂无学生</p>'; container.querySelectorAll('.class-select').forEach(sel=>sel.addEventListener('change',async function(){ const user=users.find(u=>u.studentId===this.dataset.id); if(user){ user.classId=this.value; await saveAllData(); } })); container.querySelectorAll('.detail-student').forEach(b=>b.addEventListener('click',()=>showStudentDetailForAdmin(b.dataset.id))); container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click',async()=>{ users=users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderStudentTableForAdmin(); })); }
+    function showStudentDetailForAdmin(studentId) { const stu=users.find(u=>u.studentId===studentId); if(!stu) return; const myRecs=records.filter(r=>r.studentId===studentId).slice(0,50); const listHtml=myRecs.length?myRecs.map(r=>`<div style="padding:8px;border-bottom:1px solid #eee;">${r.subjectName||'未知'} · ${r.method} · ${formatTime(r.time)}</div>`).join(''):'暂无记录'; const content=`<p><strong>姓名：</strong>${stu.name}</p><p><strong>学号：</strong>${stu.studentId}</p><p><strong>班级：</strong>${getClassName(stu.classId)}</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div>`; showModal(`学生详情：${stu.name}`,content); }
+    async function handleExcel(e) { const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=async(ev)=>{ const data=new Uint8Array(ev.target.result); const wb=XLSX.read(data,{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}); if(rows.length<2) return toast('至少两行','error'); const hdr=rows[0].map(h=>String(h).trim()); const idIdx=hdr.findIndex(h=>h==='学号'||h==='studentId'); const nameIdx=hdr.findIndex(h=>h==='姓名'||h==='name'); const classIdx=hdr.findIndex(h=>h==='班级'||h==='className'); if(idIdx===-1||nameIdx===-1) return toast('需学号、姓名列','error'); let cnt=0; for(let i=1;i<rows.length;i++){ const sid=String(rows[i][idIdx]||'').trim(),sname=String(rows[i][nameIdx]||'').trim(); let sclass=classIdx!==-1?String(rows[i][classIdx]||'').trim():''; if(sclass && !classes.some(c=>c.name===sclass)){ const newClassId=Date.now().toString(36); classes.push({id:newClassId,name:sclass}); sclass=newClassId; } else if(sclass){ const existing=classes.find(c=>c.name===sclass); if(existing) sclass=existing.id; } if(sid&&sname&&!users.find(u=>u.studentId===sid)){ users.push({studentId:sid,name:sname,password:'123456',role:'student',classId:sclass||''}); cnt++; } } if(cnt>0){ await saveAllData(); renderStudentTableForAdmin(); } toast(`导入${cnt}人`); }; reader.readAsArrayBuffer(file); }
 
     // ========== 地图编辑器 ==========
     function openSubjectEditor(subjectId, isSuperAdmin) {
-        const subj = subjects.find(s=>s.id===subjectId);
-        if(!subj) return;
+        const subj = subjects.find(s=>s.id===subjectId); if(!subj) return;
         $('appRoot').innerHTML = `<div class="card"><h3>✏️ 编辑学科：${subj.name}</h3>
             <div class="input-group"><label>名称</label><input class="input" id="editName" value="${subj.name}"></div>
             <div class="input-group"><label>班级</label><select class="input" id="editClassId">${classes.map(c=>`<option value="${c.id}" ${subj.classId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></div>
@@ -758,13 +474,9 @@
             <button class="btn btn-block mt-2" id="backBtn">← 返回</button>
         </div>`;
         $('saveSubjectBtn').addEventListener('click', async ()=>{
-            subj.name = $('editName').value.trim();
-            subj.classId = $('editClassId').value;
-            subj.targetLat = parseFloat($('latInput').value);
-            subj.targetLng = parseFloat($('lngInput').value);
-            subj.radius = parseInt($('radiusInput').value);
-            subj.qrContent = $('qrContentInput').value.trim();
-            subj.checkinCode = $('codeInput').value.trim();
+            subj.name = $('editName').value.trim(); subj.classId = $('editClassId').value;
+            subj.targetLat = parseFloat($('latInput').value); subj.targetLng = parseFloat($('lngInput').value);
+            subj.radius = parseInt($('radiusInput').value); subj.qrContent = $('qrContentInput').value.trim(); subj.checkinCode = $('codeInput').value.trim();
             await saveAllData(); toast('已保存'); render();
         });
         $('backBtn').addEventListener('click', ()=>render());
@@ -772,36 +484,24 @@
     }
 
     async function initMap(subj) {
-        const container = $('editorMap'); if(!container) return;
-        container.innerHTML = '<p class="text-center">正在加载地图...</p>';
-        await waitForAMapLoader();
-        if(typeof AMapLoader === 'undefined') { container.innerHTML = '<p class="text-center" style="color:var(--danger);">地图组件加载失败</p>'; return; }
-        window._AMapSecurityConfig = { securityJsCode: amapSecret };
-        try {
-            const AMap = await AMapLoader.load({ key: amapKey, version: '2.0' });
+        const container=$('editorMap'); if(!container) return;
+        container.innerHTML='<p class="text-center">正在加载地图...</p>';
+        await waitForAMapLoader(); if(typeof AMapLoader==='undefined'){ container.innerHTML='<p class="text-center" style="color:var(--danger);">地图组件加载失败</p>'; return; }
+        window._AMapSecurityConfig={securityJsCode:amapSecret};
+        try{
+            const AMap=await AMapLoader.load({key:amapKey,version:'2.0'});
             if(adminMap) adminMap.destroy();
-            adminMap = new AMap.Map('editorMap', { zoom:17, center:[subj.targetLng, subj.targetLat], viewMode:'3D', showBuildingBlock:true });
-            targetMarker = new AMap.Marker({
-                position: [subj.targetLng, subj.targetLat],
-                draggable: true,
-                map: adminMap,
-                icon: new AMap.Icon({ size: new AMap.Size(36,42), imageSize: new AMap.Size(36,42), image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png' }),
-                offset: new AMap.Pixel(-13, -38)
+            adminMap=new AMap.Map('editorMap',{zoom:17,center:[subj.targetLng,subj.targetLat],viewMode:'3D',showBuildingBlock:true});
+            targetMarker=new AMap.Marker({
+                position:[subj.targetLng,subj.targetLat],draggable:true,map:adminMap,
+                icon:new AMap.Icon({size:new AMap.Size(36,42),imageSize:new AMap.Size(36,42),image:'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png'}),
+                offset:new AMap.Pixel(-13,-38)
             });
-            adminMap.on('click', e=>{ targetMarker.setPosition(e.lnglat); $('latInput').value = e.lnglat.lat.toFixed(6); $('lngInput').value = e.lnglat.lng.toFixed(6); });
-            targetMarker.on('dragend', e=>{ $('latInput').value = e.lnglat.lat.toFixed(6); $('lngInput').value = e.lnglat.lng.toFixed(6); });
-            const locateBtn = $('locateMeBtn');
-            if(locateBtn){
-                locateBtn.addEventListener('click', ()=>{
-                    if(!navigator.geolocation){ toast('浏览器不支持定位','error'); return; }
-                    navigator.geolocation.getCurrentPosition(
-                        pos=>{ adminMap.setCenter([pos.coords.longitude, pos.coords.latitude]); toast('已定位到您的当前位置'); },
-                        err=>{ toast('定位失败，请检查权限','error'); },
-                        { enableHighAccuracy:true, timeout:10000 }
-                    );
-                });
-            }
-        } catch(e){ container.innerHTML = '<p class="text-center" style="color:var(--danger);">地图加载失败</p>'; }
+            adminMap.on('click',e=>{ targetMarker.setPosition(e.lnglat); $('latInput').value=e.lnglat.lat.toFixed(6); $('lngInput').value=e.lnglat.lng.toFixed(6); });
+            targetMarker.on('dragend',e=>{ $('latInput').value=e.lnglat.lat.toFixed(6); $('lngInput').value=e.lnglat.lng.toFixed(6); });
+            const locateBtn=$('locateMeBtn');
+            if(locateBtn){ locateBtn.addEventListener('click',()=>{ if(!navigator.geolocation){ toast('浏览器不支持定位','error'); return; } navigator.geolocation.getCurrentPosition(pos=>{ adminMap.setCenter([pos.coords.longitude,pos.coords.latitude]); toast('已定位到您的当前位置'); },err=>{ toast('定位失败，请检查权限','error'); },{enableHighAccuracy:true,timeout:10000}); }); }
+        }catch(e){ container.innerHTML='<p class="text-center" style="color:var(--danger);">地图加载失败</p>'; }
     }
 
     // 启动
