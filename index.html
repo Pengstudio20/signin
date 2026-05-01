@@ -8,16 +8,23 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <!-- 外部库 -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #f0f4ff 0%, #e8f5e9 100%);
-            --card-bg: rgba(255,255,255,0.72); --primary: #4f6ef7; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
-            --text: #1e293b; --text-light: #64748b; --border: rgba(0,0,0,0.05);
-            --shadow: 0 8px 32px rgba(0,0,0,0.06); --radius: 28px; --radius-sm: 20px;
+            --card-bg: rgba(255,255,255,0.72);
+            --primary: #4f6ef7;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: rgba(0,0,0,0.05);
+            --shadow: 0 8px 32px rgba(0,0,0,0.06);
+            --radius: 28px;
+            --radius-sm: 20px;
             --font: -apple-system, 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -25,10 +32,16 @@
         .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
         .card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 40px; padding: 12px 24px; font-weight: 600; font-size: 0.95rem; background: rgba(255,255,255,0.75); backdrop-filter: blur(10px); box-shadow: 0 4px 14px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; color: var(--primary); }
-        .btn:active { transform: scale(0.96); } .btn-primary { background: var(--primary); color: #fff; } .btn-success { background: var(--success); color: #fff; } .btn-danger { background: var(--danger); color: #fff; } .btn-block { width: 100%; } .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-block { width: 100%; }
+        .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
         .input { width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.6); border: 1px solid var(--border); border-radius: 20px; font-size: 1rem; outline: none; }
         .input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,110,247,0.12); }
-        .input-group { margin-bottom: 16px; } .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
         .checkin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 14px; }
         .checkin-tile { background: rgba(255,255,255,0.65); backdrop-filter: blur(16px); border-radius: var(--radius-sm); padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.5); }
         .checkin-tile .icon { font-size: 32px; margin-bottom: 8px; display: block; }
@@ -40,18 +53,29 @@
         .modal-title { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 20px; }
         .map-container { width: 100%; height: 220px; border-radius: 20px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); background: #f0f4f8; }
         .subject-chip { background: rgba(255,255,255,0.8); padding: 14px 20px; border-radius: 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .subject-chip.active { background: var(--primary); color: #fff; } .subject-chip.checked { background: #dcfce7; color: #166534; }
+        .subject-chip.active { background: var(--primary); color: #fff; }
+        .subject-chip.checked { background: #dcfce7; color: #166534; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
         .toggle input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 26px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); } input:checked + .slider:before { transform: translateX(22px); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .mini-table td, .mini-table th { padding: 10px 6px; border-bottom: 1px solid var(--border); }
         .avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700; background: var(--primary); }
-        .profile-card { display: flex; align-items: center; gap: 16px; } .profile-info { flex:1; } .profile-name { font-size: 1.3rem; font-weight: 700; } .profile-id { color: var(--text-light); font-size: 0.9rem; }
-        .text-center { text-align: center; } .mt-2 { margin-top: 8px; } .mb-2 { margin-bottom: 8px; } .gap-2 { display: flex; gap: 10px; } .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .profile-card { display: flex; align-items: center; gap: 16px; }
+        .profile-info { flex:1; }
+        .profile-name { font-size: 1.3rem; font-weight: 700; }
+        .profile-id { color: var(--text-light); font-size: 0.9rem; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 8px; }
+        .mb-2 { margin-bottom: 8px; }
+        .gap-2 { display: flex; gap: 10px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .class-group { margin-bottom: 16px; border-left: 3px solid var(--primary); padding-left: 12px; }
+        .class-group-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -61,15 +85,14 @@
 <script>
 (async function() {
     // ================== 自建后端配置 ==================
-    const BACKEND_URL = 'https://signin-frua.onrender.com';  // 您的后端地址
+    const BACKEND_URL = 'https://signin-frua.onrender.com';
     const DATA_URL = `${BACKEND_URL}/api/data`;
     const CONFIG_URL = `${BACKEND_URL}/api/config`;
 
-    // 全局高德配置
     let amapKey = '';
     let amapSecret = '';
 
-    // 从后端获取高德 Key
+    // 获取高德配置
     try {
         const configRes = await fetch(CONFIG_URL);
         if (configRes.ok) {
@@ -77,40 +100,23 @@
             amapKey = config.amapKey || '';
             amapSecret = config.amapSecret || '';
         }
-    } catch (e) {
-        console.warn('无法从后端获取高德配置，地图可能不可用');
-    }
-
-    // 如果获取失败，使用备用 Key（仅限开发环境，生产环境请务必在后端设置环境变量）
-    if (!amapKey) {
-        amapKey = '35b47b833fe719ef0b2a1c4db5b30dc2';
-        amapSecret = 'f1689b304255fa69d2bd0ba940df5924';
-    }
+    } catch (e) {}
 
     // 动态加载高德 Loader
     const script = document.createElement('script');
     script.src = 'https://webapi.amap.com/loader.js';
     document.head.appendChild(script);
 
-    // 等待 AMapLoader 就绪
     function waitForAMapLoader() {
         return new Promise((resolve) => {
-            if (typeof AMapLoader !== 'undefined') {
-                resolve();
-                return;
-            }
+            if (typeof AMapLoader !== 'undefined') { resolve(); return; }
             const timer = setInterval(() => {
-                if (typeof AMapLoader !== 'undefined') {
-                    clearInterval(timer);
-                    resolve();
-                }
+                if (typeof AMapLoader !== 'undefined') { clearInterval(timer); resolve(); }
             }, 100);
         });
     }
 
-    // ================== 数据存储键 ==================
-    const KEYS = { users: 'cu_loc', records: 'cr_loc', subjects: 'cs_loc', session: 'csess_loc' };
-
+    const KEYS = { users: 'cu_full', records: 'cr_full', subjects: 'cs_full', session: 'csess_full' };
     const defaultSubjects = [
         { id: 'math', name: '高等数学', targetLat: 39.9042, targetLng: 116.4074, radius: 500,
           checkinCode: 'MATH2025', qrContent: 'SUBJECT:math', publishDate: '', enableLocation: true, enableQRCode: true, enableCode: true },
@@ -129,8 +135,7 @@
     let adminMap = null, targetMarker = null;
     const $ = id => document.getElementById(id);
 
-    // 广播同步（同一浏览器多标签页）
-    const channel = new BroadcastChannel('checkin_channel');
+    const channel = new BroadcastChannel('checkin_full');
     channel.onmessage = (e) => { if(e.data.type==='data-updated') { loadFromLocal(); render(); } };
     function notifyChannel() { channel.postMessage({ type: 'data-updated' }); }
 
@@ -464,15 +469,34 @@
         const today = new Date().toISOString().split('T')[0];
         const allStudents = users.filter(u => u.role === 'student').sort((a,b) => (a.className||'').localeCompare(b.className||''));
         const signedIds = records.filter(r => r.subjectId === subjectId && r.time?.startsWith(today)).map(r => r.studentId);
-        let listHtml = allStudents.map(stu => {
-            const signed = signedIds.includes(stu.studentId);
-            return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId}) <small style="color:var(--text-light);">${stu.className||''}</small></span><span>${signed ? '✅ 已签到' : '⭕ 未签到'}</span></div>`;
-        }).join('');
-        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px; overflow-y:auto; margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportTeacherDetail">📥 导出Excel</button>`;
+        const classes = {};
+        allStudents.forEach(stu => {
+            const cls = stu.className || '未分班';
+            if (!classes[cls]) classes[cls] = [];
+            classes[cls].push(stu);
+        });
+        let listHtml = '';
+        for (const [cls, stus] of Object.entries(classes)) {
+            listHtml += `<div class="class-group">
+                <div class="class-group-title">${cls} (${stus.length}人)</div>`;
+            stus.forEach(stu => {
+                const signed = signedIds.includes(stu.studentId);
+                listHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;">
+                    <span>${stu.name} (${stu.studentId})</span>
+                    <span>${signed ? '✅ 已签到' : '⭕ 未签到'}</span>
+                </div>`;
+            });
+            listHtml += `</div>`;
+        }
+        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p>
+            <div style="max-height:300px; overflow-y:auto; margin-top:12px;">${listHtml}</div>
+            <button class="btn btn-sm btn-block mt-2" id="exportTeacherDetail">📥 导出Excel（按班级）</button>`;
         showModal(`${subj.name} 签到详情`, content);
         $('exportTeacherDetail')?.addEventListener('click', () => {
-            let csv = '姓名,学号,班级,签到状态\n';
-            allStudents.forEach(stu => csv += `${stu.name},${stu.studentId},${stu.className||''},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
+            let csv = '班级,姓名,学号,签到状态\n';
+            for (const [cls, stus] of Object.entries(classes)) {
+                stus.forEach(stu => csv += `${cls},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
+            }
             downloadCSV(csv, `${subj.name}_签到明细.csv`);
         });
     }
@@ -591,15 +615,30 @@
         const today = new Date().toISOString().split('T')[0];
         const allStudents = users.filter(u => u.role==='student').sort((a,b) => (a.className||'').localeCompare(b.className||''));
         const signedIds = records.filter(r => r.subjectId===subjectId && r.time?.startsWith(today)).map(r=>r.studentId);
-        const listHtml = allStudents.map(stu => {
-            const signed = signedIds.includes(stu.studentId);
-            return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId}) <small>${stu.className||''}</small></span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`;
-        }).join('');
-        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportSubjectDetail">📥 导出Excel</button>`;
+        const classes = {};
+        allStudents.forEach(stu => {
+            const cls = stu.className || '未分班';
+            if (!classes[cls]) classes[cls] = [];
+            classes[cls].push(stu);
+        });
+        let listHtml = '';
+        for (const [cls, stus] of Object.entries(classes)) {
+            listHtml += `<div class="class-group"><div class="class-group-title">${cls} (${stus.length}人)</div>`;
+            stus.forEach(stu => {
+                const signed = signedIds.includes(stu.studentId);
+                listHtml += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;">
+                    <span>${stu.name} (${stu.studentId}) <small>${stu.className||''}</small></span>
+                    <span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`;
+            });
+            listHtml += `</div>`;
+        }
+        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportSubjectDetail">📥 导出Excel（按班级）</button>`;
         showModal(`${subj.name} 签到详情`, content);
         $('exportSubjectDetail')?.addEventListener('click', () => {
-            let csv = '姓名,学号,班级,签到状态\n';
-            allStudents.forEach(stu => csv += `${stu.name},${stu.studentId},${stu.className||''},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
+            let csv = '班级,姓名,学号,签到状态\n';
+            for (const [cls, stus] of Object.entries(classes)) {
+                stus.forEach(stu => csv += `${cls},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
+            }
             downloadCSV(csv, `${subj.name}_签到明细.csv`);
         });
     }
@@ -691,7 +730,7 @@
         reader.readAsArrayBuffer(file);
     }
 
-    // ========== 地图编辑器（动态 Key） ==========
+    // ========== 地图编辑器 ==========
     function openSubjectEditor(subjectId, isSuperAdmin) {
         const subj = subjects.find(s => s.id === subjectId);
         if(!subj) return;
@@ -723,25 +762,18 @@
     async function initMap(subj) {
         const container = $('editorMap'); if(!container) return;
         container.innerHTML = '<p class="text-center">正在加载地图...</p>';
-        await waitForAMapLoader(); // 确保 Loader 已加载
+        await waitForAMapLoader();
         if(typeof AMapLoader === 'undefined') { container.innerHTML = '<p class="text-center" style="color:var(--danger);">地图组件加载失败</p>'; return; }
         window._AMapSecurityConfig = { securityJsCode: amapSecret };
         try {
-            const AMap = await AMapLoader.load({
-                key: amapKey,
-                version: '2.0'
-            });
+            const AMap = await AMapLoader.load({ key: amapKey, version: '2.0' });
             if(adminMap) adminMap.destroy();
             adminMap = new AMap.Map('editorMap', { zoom:17, center:[subj.targetLng, subj.targetLat], viewMode:'3D', showBuildingBlock:true });
             targetMarker = new AMap.Marker({
                 position: [subj.targetLng, subj.targetLat],
                 draggable: true,
                 map: adminMap,
-                icon: new AMap.Icon({
-                    size: new AMap.Size(36, 42),
-                    imageSize: new AMap.Size(36, 42),
-                    image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png'
-                }),
+                icon: new AMap.Icon({ size: new AMap.Size(36,42), imageSize: new AMap.Size(36,42), image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png' }),
                 offset: new AMap.Pixel(-13, -38)
             });
             adminMap.on('click', e => { targetMarker.setPosition(e.lnglat); $('latInput').value = e.lnglat.lat.toFixed(6); $('lngInput').value = e.lnglat.lng.toFixed(6); });
@@ -749,19 +781,10 @@
             const locateBtn = $('locateMeBtn');
             if(locateBtn) {
                 locateBtn.addEventListener('click', () => {
-                    if (!navigator.geolocation) { toast('浏览器不支持定位', 'error'); return; }
+                    if (!navigator.geolocation) { toast('浏览器不支持定位','error'); return; }
                     navigator.geolocation.getCurrentPosition(
-                        pos => {
-                            adminMap.setCenter([pos.coords.longitude, pos.coords.latitude]);
-                            toast('已定位到您的当前位置');
-                        },
-                        err => {
-                            let msg = '定位失败';
-                            if (err.code === 1) msg = '权限被拒绝，请在设置中允许';
-                            else if (err.code === 2) msg = '无法获取位置';
-                            else if (err.code === 3) msg = '定位超时';
-                            toast(msg, 'error');
-                        },
+                        pos => { adminMap.setCenter([pos.coords.longitude, pos.coords.latitude]); toast('已定位到您的当前位置'); },
+                        err => { toast('定位失败，请检查权限','error'); },
                         { enableHighAccuracy: true, timeout: 10000 }
                     );
                 });
