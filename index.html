@@ -8,24 +8,15 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <!-- 外部库 -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #f0f4ff 0%, #e8f5e9 100%);
-            --card-bg: rgba(255,255,255,0.72);
-            --primary: #4f6ef7;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: rgba(0,0,0,0.05);
-            --shadow: 0 8px 32px rgba(0,0,0,0.06);
-            --radius: 28px;
-            --radius-sm: 20px;
+            --card-bg: rgba(255,255,255,0.72); --primary: #4f6ef7; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --text: #1e293b; --text-light: #64748b; --border: rgba(0,0,0,0.05);
+            --shadow: 0 8px 32px rgba(0,0,0,0.06); --radius: 28px; --radius-sm: 20px;
             --font: -apple-system, 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -33,16 +24,10 @@
         .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
         .card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 40px; padding: 12px 24px; font-weight: 600; font-size: 0.95rem; background: rgba(255,255,255,0.75); backdrop-filter: blur(10px); box-shadow: 0 4px 14px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; color: var(--primary); }
-        .btn:active { transform: scale(0.96); }
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-success { background: var(--success); color: #fff; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-block { width: 100%; }
-        .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
+        .btn:active { transform: scale(0.96); } .btn-primary { background: var(--primary); color: #fff; } .btn-success { background: var(--success); color: #fff; } .btn-danger { background: var(--danger); color: #fff; } .btn-block { width: 100%; } .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
         .input { width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.6); border: 1px solid var(--border); border-radius: 20px; font-size: 1rem; outline: none; }
         .input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,110,247,0.12); }
-        .input-group { margin-bottom: 16px; }
-        .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
+        .input-group { margin-bottom: 16px; } .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
         .checkin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 14px; }
         .checkin-tile { background: rgba(255,255,255,0.65); backdrop-filter: blur(16px); border-radius: var(--radius-sm); padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.5); }
         .checkin-tile .icon { font-size: 32px; margin-bottom: 8px; display: block; }
@@ -54,27 +39,18 @@
         .modal-title { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 20px; }
         .map-container { width: 100%; height: 220px; border-radius: 20px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); background: #f0f4f8; }
         .subject-chip { background: rgba(255,255,255,0.8); padding: 14px 20px; border-radius: 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .subject-chip.active { background: var(--primary); color: #fff; }
-        .subject-chip.checked { background: #dcfce7; color: #166534; }
+        .subject-chip.active { background: var(--primary); color: #fff; } .subject-chip.checked { background: #dcfce7; color: #166534; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
         .toggle input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 26px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(22px); }
+        input:checked + .slider { background-color: var(--primary); } input:checked + .slider:before { transform: translateX(22px); }
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .mini-table td, .mini-table th { padding: 10px 6px; border-bottom: 1px solid var(--border); }
         .avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700; background: var(--primary); }
-        .profile-card { display: flex; align-items: center; gap: 16px; }
-        .profile-info { flex:1; }
-        .profile-name { font-size: 1.3rem; font-weight: 700; }
-        .profile-id { color: var(--text-light); font-size: 0.9rem; }
-        .text-center { text-align: center; }
-        .mt-2 { margin-top: 8px; }
-        .mb-2 { margin-bottom: 8px; }
-        .gap-2 { display: flex; gap: 10px; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .profile-card { display: flex; align-items: center; gap: 16px; } .profile-info { flex:1; } .profile-name { font-size: 1.3rem; font-weight: 700; } .profile-id { color: var(--text-light); font-size: 0.9rem; }
+        .text-center { text-align: center; } .mt-2 { margin-top: 8px; } .mb-2 { margin-bottom: 8px; } .gap-2 { display: flex; gap: 10px; } .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .class-group { margin-bottom: 16px; border-left: 3px solid var(--primary); padding-left: 12px; }
         .class-group-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.9rem; }
         .class-header { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: var(--primary); }
@@ -98,7 +74,7 @@
     const script = document.createElement('script'); script.src = 'https://webapi.amap.com/loader.js'; document.head.appendChild(script);
     function waitForAMapLoader() { return new Promise((resolve) => { if (typeof AMapLoader !== 'undefined') { resolve(); return; } const timer = setInterval(() => { if (typeof AMapLoader !== 'undefined') { clearInterval(timer); resolve(); } }, 100); }); }
 
-    const KEYS = { users: 'cu_v8', records: 'cr_v8', subjects: 'cs_v8', classes: 'cl_v8', loginLogs: 'll_v8', session: 'csess_v8' };
+    const KEYS = { users: 'cu_v9', records: 'cr_v9', subjects: 'cs_v9', classes: 'cl_v9', loginLogs: 'll_v9', session: 'csess_v9' };
     const defaultClasses = [ { id: 'class1', name: '软件1班' }, { id: 'class2', name: '软件2班' } ];
     const defaultSubjects = [
         { id: 'math1', name: '高等数学', classId: 'class1', targetLat: 39.9042, targetLng: 116.4074, radius: 500, checkinCode: 'MATH1', qrContent: 'SUBJECT:math1', publishDate: '', enableLocation: true, enableQRCode: true, enableCode: true },
@@ -118,7 +94,7 @@
     let adminMap = null, targetMarker = null;
     const $ = id => document.getElementById(id);
 
-    const channel = new BroadcastChannel('checkin_v8');
+    const channel = new BroadcastChannel('checkin_v9');
     channel.onmessage = (e) => { if(e.data.type==='data-updated') { loadFromLocal(); render(); } };
     function notifyChannel() { channel.postMessage({ type: 'data-updated' }); }
 
@@ -188,7 +164,7 @@
         else { root.innerHTML = renderStudent(); bindStudentEvents(); }
     }
 
-    // ==================== 认证 ====================
+    // ========== 认证 ==========
     function renderAuth() {
         return `<div class="card text-center"><div style="font-size:56px;">🎓</div><h2>学生课堂智能签到系统</h2>
         <p style="color:var(--text-light); margin-bottom:24px;">姓名·学号·密码登录</p>
@@ -593,18 +569,42 @@
         container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{ users = users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderTeacherTableForAdmin(); renderStudentTableForAdmin(); }));
     }
 
+    // ★ 新的教师分配学科：级联选择班级和学科
     function assignTeacher(teacherId) {
-        let classGroup = {};
-        subjects.forEach(s => { const clsName = getClassName(s.classId); if(!classGroup[clsName]) classGroup[clsName] = []; classGroup[clsName].push(s); });
-        let promptText = '可用学科（按班级分组）：\n';
-        for (const [cls, subjs] of Object.entries(classGroup)) { promptText += `\n【${cls}】\n`; subjs.forEach(s => promptText += `  ${s.name} (${s.id})\n`); }
-        const subjId = prompt('输入要分配的学科ID：\n' + promptText);
-        if (!subjId || !subjects.some(s => s.id === subjId)) return toast('学科不存在','error');
-        const teacher = users.find(u => u.studentId === teacherId);
-        if (!teacher.subjectIds) teacher.subjectIds = [];
-        if (teacher.subjectIds.includes(subjId)) return toast('已分配','warning');
-        teacher.subjectIds.push(subjId);
-        saveAllData(); renderTeacherTableForAdmin(); renderSubjectManage();
+        if (classes.length === 0) return toast('请先创建班级','warning');
+        // 第一步：选择班级
+        let classOptions = classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        let html = `<label>选择班级</label><select class="input" id="classSelect">${classOptions}</select>`;
+        showModal('选择班级', html + '<button class="btn btn-primary btn-block mt-2" id="nextStep">下一步</button>');
+        $('nextStep')?.addEventListener('click', () => {
+            const selectedClassId = $('classSelect').value;
+            const classSubjects = subjects.filter(s => s.classId === selectedClassId);
+            if (classSubjects.length === 0) {
+                closeModal();
+                toast('该班级下暂无学科','warning');
+                return;
+            }
+            closeModal();
+            let subjectOptions = classSubjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            let subjectHtml = `<label>选择学科（${getClassName(selectedClassId)}）</label><select class="input" id="subjectSelect">${subjectOptions}</select>`;
+            showModal('选择学科', subjectHtml + '<button class="btn btn-primary btn-block mt-2" id="confirmAssign">确认分配</button>');
+            $('confirmAssign')?.addEventListener('click', async () => {
+                const selectedSubjectId = $('subjectSelect').value;
+                const teacher = users.find(u => u.studentId === teacherId);
+                if (!teacher) return;
+                if (!teacher.subjectIds) teacher.subjectIds = [];
+                if (teacher.subjectIds.includes(selectedSubjectId)) {
+                    closeModal();
+                    toast('该教师已有此学科','warning');
+                    return;
+                }
+                teacher.subjectIds.push(selectedSubjectId);
+                await saveAllData();
+                closeModal();
+                toast('学科已分配');
+                renderTeacherTableForAdmin();
+            });
+        });
     }
 
     function showTeacherDetail(teacherId) {
