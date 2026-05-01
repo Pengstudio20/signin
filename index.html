@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, shrink-to-fit=no">
     <title>学生课堂智能签到系统</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -24,10 +24,16 @@
         .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
         .card { background: var(--card-bg); backdrop-filter: blur(20px); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 40px; padding: 12px 24px; font-weight: 600; font-size: 0.95rem; background: rgba(255,255,255,0.75); backdrop-filter: blur(10px); box-shadow: 0 4px 14px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; color: var(--primary); }
-        .btn:active { transform: scale(0.96); } .btn-primary { background: var(--primary); color: #fff; } .btn-success { background: var(--success); color: #fff; } .btn-danger { background: var(--danger); color: #fff; } .btn-block { width: 100%; } .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-block { width: 100%; }
+        .btn-sm { padding: 8px 18px; font-size: 0.85rem; border-radius: 30px; }
         .input { width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.6); border: 1px solid var(--border); border-radius: 20px; font-size: 1rem; outline: none; }
         .input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,110,247,0.12); }
-        .input-group { margin-bottom: 16px; } .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
         .checkin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 14px; }
         .checkin-tile { background: rgba(255,255,255,0.65); backdrop-filter: blur(16px); border-radius: var(--radius-sm); padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid rgba(255,255,255,0.5); }
         .checkin-tile .icon { font-size: 32px; margin-bottom: 8px; display: block; }
@@ -39,18 +45,27 @@
         .modal-title { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 20px; }
         .map-container { width: 100%; height: 220px; border-radius: 20px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); background: #f0f4f8; }
         .subject-chip { background: rgba(255,255,255,0.8); padding: 14px 20px; border-radius: 20px; font-weight: 600; font-size: 0.95rem; cursor: pointer; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .subject-chip.active { background: var(--primary); color: #fff; } .subject-chip.checked { background: #dcfce7; color: #166534; }
+        .subject-chip.active { background: var(--primary); color: #fff; }
+        .subject-chip.checked { background: #dcfce7; color: #166534; }
         .switch-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
         .toggle input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 26px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); } input:checked + .slider:before { transform: translateX(22px); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .mini-table td, .mini-table th { padding: 10px 6px; border-bottom: 1px solid var(--border); }
         .avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 700; background: var(--primary); }
-        .profile-card { display: flex; align-items: center; gap: 16px; } .profile-info { flex:1; } .profile-name { font-size: 1.3rem; font-weight: 700; } .profile-id { color: var(--text-light); font-size: 0.9rem; }
-        .text-center { text-align: center; } .mt-2 { margin-top: 8px; } .mb-2 { margin-bottom: 8px; } .gap-2 { display: flex; gap: 10px; } .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .profile-card { display: flex; align-items: center; gap: 16px; }
+        .profile-info { flex:1; }
+        .profile-name { font-size: 1.3rem; font-weight: 700; }
+        .profile-id { color: var(--text-light); font-size: 0.9rem; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 8px; }
+        .mb-2 { margin-bottom: 8px; }
+        .gap-2 { display: flex; gap: 10px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .class-group { margin-bottom: 16px; border-left: 3px solid var(--primary); padding-left: 12px; }
         .class-group-title { font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.9rem; }
         .class-header { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: var(--primary); }
@@ -59,7 +74,6 @@
 <body>
 <div class="app" id="appRoot"></div>
 <div id="toastContainer" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:2000;pointer-events:none;"></div>
-
 <script>
 (async function() {
     const BACKEND_URL = 'https://signin-frua.onrender.com';
@@ -75,7 +89,7 @@
     const script = document.createElement('script'); script.src = 'https://webapi.amap.com/loader.js'; document.head.appendChild(script);
     function waitForAMapLoader() { return new Promise((resolve) => { if (typeof AMapLoader !== 'undefined') { resolve(); return; } const timer = setInterval(() => { if (typeof AMapLoader !== 'undefined') { clearInterval(timer); resolve(); } }, 100); }); }
 
-    const KEYS = { users: 'cu_v4', records: 'cr_v4', subjects: 'cs_v4', classes: 'cl_v4', loginLogs: 'll_v4', session: 'csess_v4' };
+    const KEYS = { users: 'cu_v5', records: 'cr_v5', subjects: 'cs_v5', classes: 'cl_v5', loginLogs: 'll_v5', session: 'csess_v5' };
     const defaultClasses = [ { id: 'class1', name: '软件1班' }, { id: 'class2', name: '软件2班' } ];
     const defaultSubjects = [
         { id: 'math1', name: '高等数学', classId: 'class1', targetLat: 39.9042, targetLng: 116.4074, radius: 500, checkinCode: 'MATH1', qrContent: 'SUBJECT:math1', publishDate: '', enableLocation: true, enableQRCode: true, enableCode: true },
@@ -95,7 +109,7 @@
     let adminMap = null, targetMarker = null;
     const $ = id => document.getElementById(id);
 
-    const channel = new BroadcastChannel('checkin_v4');
+    const channel = new BroadcastChannel('checkin_v5');
     channel.onmessage = (e) => { if(e.data.type==='data-updated') { loadFromLocal(); render(); } };
     function notifyChannel() { channel.postMessage({ type: 'data-updated' }); }
 
@@ -155,7 +169,6 @@
     function getAvatarColor(name) { let hash=0; for(let i=0;i<name.length;i++) hash = name.charCodeAt(i)+((hash<<5)-hash); const colors = ['#4f6ef7','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4']; return colors[Math.abs(hash)%colors.length]; }
     function renderAvatar(name) { const initial = name ? name.charAt(name.length-1) : '?'; return `<div class="avatar" style="background:${getAvatarColor(name)};">${initial}</div>`; }
     function getClassName(classId) { const c = classes.find(x=>x.id===classId); return c ? c.name : '未知班级'; }
-
     async function addLoginLog(studentId, name, role) { loginLogs.push({ studentId, name, role, time: new Date().toISOString() }); await saveAllData(); }
 
     function render() {
@@ -166,14 +179,222 @@
         else { root.innerHTML = renderStudent(); bindStudentEvents(); }
     }
 
-    // ========== 认证（略，保持原有完整功能） ==========
-    function renderAuth() { return `<div class="card text-center">...登录表单...</div>`; } // 为节省篇幅此处省略，实际包含完整认证表单与注册
-    function bindAuthEvents() { /* 完整登录、注册事件，同之前 */ }
+    // ==================== 认证界面 ====================
+    function renderAuth() {
+        return `<div class="card text-center"><div style="font-size:56px;">🎓</div><h2>学生课堂智能签到系统</h2>
+        <p style="color:var(--text-light); margin-bottom:24px;">姓名·学号·密码登录</p>
+        <div class="input-group"><label>👤 姓名</label><input class="input" id="loginName" placeholder="真实姓名"></div>
+        <div class="input-group"><label>🆔 学号</label><input class="input" id="loginId" placeholder="学号"></div>
+        <div class="input-group"><label>🔒 密码</label><input class="input" type="password" id="loginPwd" placeholder="密码"></div>
+        <button class="btn btn-primary btn-block" id="btnLogin">登录</button>
+        <p class="mt-2"><a href="#" id="showRegister" style="color:var(--primary);">注册学生账号</a></p></div>
+        <div id="registerPanel" style="display:none;"><div class="card text-center"><h2>📝 注册学生</h2>
+        <div class="input-group"><label>👤 姓名</label><input class="input" id="regName"></div>
+        <div class="input-group"><label>🆔 学号</label><input class="input" id="regId"></div>
+        <div class="input-group"><label>🏫 班级</label><select class="input" id="regClass">${classes.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+        <div class="input-group"><label>🔒 密码</label><input class="input" type="password" id="regPwd"></div>
+        <button class="btn btn-success btn-block" id="btnRegister">确认注册</button>
+        <button class="btn btn-block mt-2" id="backToLogin">← 返回登录</button></div></div>`;
+    }
 
-    // ========== 学生端（略，保持原有） ==========
-    // ========== 教师端（略，保持原有） ==========
+    function bindAuthEvents() {
+        $('btnLogin').addEventListener('click', async () => {
+            const name = $('loginName').value.trim(), id = $('loginId').value.trim(), pwd = $('loginPwd').value;
+            if(!name||!id||!pwd) return toast('请填写完整','error');
+            const user = users.find(u=>u.studentId===id);
+            if(!user) return toast('学号不存在','error');
+            if(user.name!==name) return toast('姓名不匹配','error');
+            if(user.password!==pwd) return toast('密码错误','error');
+            currentUser = { studentId:user.studentId, name:user.name, role:user.role, subjectIds:user.subjectIds, classId:user.classId };
+            session.save(currentUser);
+            if (user.role !== 'superadmin') await addLoginLog(user.studentId, user.name, user.role);
+            render();
+        });
+        $('showRegister').addEventListener('click', e=>{ e.preventDefault(); $('registerPanel').style.display='block'; document.querySelector('.card').style.display='none'; });
+        $('backToLogin').addEventListener('click', ()=>{ $('registerPanel').style.display='none'; document.querySelector('.card').style.display='block'; });
+        $('btnRegister').addEventListener('click', async ()=>{
+            const name=$('regName').value.trim(), id=$('regId').value.trim(), classId=$('regClass').value, pwd=$('regPwd').value;
+            if(!name||!id||!classId||!pwd) return toast('请完整填写','error');
+            if(pwd.length<4) return toast('密码至少4位','error');
+            if(users.some(u=>u.studentId===id)) return toast('学号已存在','error');
+            users.push({ studentId:id, name, password:pwd, role:'student', classId });
+            await saveAllData(); toast('注册成功'); $('registerPanel').style.display='none'; document.querySelector('.card').style.display='block';
+        });
+    }
 
-    // ========== 超管端（核心修改） ==========
+    // ==================== 学生端 ====================
+    function renderStudent() {
+        const today = new Date().toISOString().split('T')[0];
+        const myClassId = currentUser.classId;
+        const myClassName = getClassName(myClassId);
+        const mySubjects = subjects.filter(s=>s.classId===myClassId);
+        const myToday = records.filter(r=>r.studentId===currentUser.studentId && r.time?.startsWith(today));
+        return `<div class="card profile-card">
+            ${renderAvatar(currentUser.name)}
+            <div class="profile-info"><div class="profile-name">${currentUser.name}</div><div class="profile-id">${currentUser.studentId} · ${myClassName}</div></div>
+            <button class="btn btn-sm" id="logoutBtn" style="color:var(--danger);">退出</button>
+        </div>
+        <div class="card"><span class="badge">📅 今日签到 ${myToday.length}/${mySubjects.length}</span></div>
+        <div class="card"><div class="class-header">📘 ${myClassName}</div><div id="subjectChips"></div></div>
+        <div id="checkinActions" style="display:none;"></div>
+        <button class="btn btn-block" id="myRecordsBtn">📋 我的签到记录</button>`;
+    }
+
+    function bindStudentEvents() {
+        $('logoutBtn').addEventListener('click', ()=>{ session.clear(); render(); });
+        renderSubjectChips();
+        $('myRecordsBtn').addEventListener('click', ()=>{
+            const myRecs = records.filter(r=>r.studentId===currentUser.studentId).slice(0,40);
+            const html = myRecs.length ? myRecs.map(r=>`<div style="padding:10px;border-bottom:1px solid var(--border);">${r.subjectName||'未知'} · ${r.method} · ${formatTime(r.time)}</div>`).join('') : '暂无记录';
+            showModal('我的签到记录', html + '<button class="btn btn-sm btn-block mt-2" id="exportMyRecords">📥 导出我的记录</button>');
+            $('exportMyRecords')?.addEventListener('click', ()=>{ let csv='学科,方式,时间\n'+myRecs.map(r=>`${r.subjectName||''},${r.method},${r.time}`).join('\n'); downloadCSV(csv,'我的签到记录.csv'); });
+        });
+    }
+
+    function renderSubjectChips() {
+        const container=$('subjectChips'); const today=new Date().toISOString().split('T')[0];
+        const mySubjects=subjects.filter(s=>s.classId===currentUser.classId);
+        container.innerHTML=mySubjects.map(s=>{
+            const signed=records.some(r=>r.studentId===currentUser.studentId && r.subjectId===s.id && r.time?.startsWith(today));
+            const pub=s.publishDate===today; let cls=selectedSubjectId===s.id?'active':(signed?'checked':'');
+            return `<div class="subject-chip ${cls}" data-id="${s.id}"><span>📗 ${s.name}</span><span style="font-size:0.8rem;">${signed?'✅ 已签':(pub?'📢 可签':'🔒 未发布')}</span></div>`;
+        }).join('');
+        container.querySelectorAll('.subject-chip').forEach(chip=>{ chip.addEventListener('click', function(){ selectedSubjectId=this.dataset.id; const subj=subjects.find(s=>s.id===selectedSubjectId); if(!subj) return; const already=records.some(r=>r.studentId===currentUser.studentId && r.subjectId===subj.id && r.time?.startsWith(new Date().toISOString().split('T')[0])); container.querySelectorAll('.subject-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); if(already){ toast('今天该学科已签到','warning'); $('checkinActions').style.display='none'; return; } showCheckinOptions(subj); }); });
+    }
+
+    function showCheckinOptions(subj) {
+        const container=$('checkinActions'); const today=new Date().toISOString().split('T')[0];
+        if(subj.publishDate!==today){ container.innerHTML='<div class="card text-center">该学科今日未发布签到</div>'; container.style.display='block'; return; }
+        let html='<div class="checkin-grid">';
+        if(subj.enableLocation) html+=`<div class="checkin-tile" id="locCheckin"><span class="icon">📍</span>位置签到</div>`;
+        if(subj.enableQRCode) html+=`<div class="checkin-tile" id="qrCheckin"><span class="icon">📱</span>二维码签到</div>`;
+        if(subj.enableCode) html+=`<div class="checkin-tile" id="codeCheckin"><span class="icon">🔢</span>签到码签到</div>`;
+        html+='</div>'; container.innerHTML=html; container.style.display='block';
+        if(subj.enableLocation) $('locCheckin').addEventListener('click',()=>startLocationCheckin(subj));
+        if(subj.enableQRCode) $('qrCheckin').addEventListener('click',()=>startQRCheckin(subj));
+        if(subj.enableCode) $('codeCheckin').addEventListener('click',()=>startCodeCheckin(subj));
+    }
+
+    async function addRecord(method, subj, loc=null) {
+        records.unshift({ id:Date.now(), studentId:currentUser.studentId, name:currentUser.name, method, time:new Date().toISOString(), location:loc, subjectId:subj.id, subjectName:subj.name, classId:subj.classId, success:true });
+        await saveAllData(); render();
+    }
+
+    function getUserLocation(success, error) {
+        if(!navigator.geolocation) return error('浏览器不支持定位');
+        navigator.geolocation.getCurrentPosition(
+            pos=>success({ lat:pos.coords.latitude, lng:pos.coords.longitude }),
+            err=>{ let msg='定位失败'; if(err.code===1) msg='权限被拒绝，请在浏览器设置中允许'; else if(err.code===2) msg='无法获取位置'; else if(err.code===3) msg='定位超时'; error(msg); },
+            { enableHighAccuracy:true, timeout:10000 }
+        );
+    }
+
+    function startLocationCheckin(subj) {
+        showModal('📍 位置签到', `<div id="locInfo" class="text-center" style="padding:16px;">正在获取位置...</div><button class="btn btn-primary btn-block" id="getLocBtn">获取GPS并签到</button><p class="text-center mt-2" style="font-size:0.8rem;">有效范围：${subj.radius}米内</p><p class="text-center mt-2" style="font-size:0.75rem; color:var(--text-light);">无法定位？<a href="#" id="manualCoordBtn">手动输入坐标</a></p>`);
+        $('getLocBtn').addEventListener('click', ()=>{
+            getUserLocation(
+                pos=>{ $('locInfo').innerHTML=`📍 ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`; const dist=haversine(pos.lat, pos.lng, subj.targetLat, subj.targetLng); if(dist<=subj.radius){ addRecord('位置签到', subj, { lat:pos.lat, lng:pos.lng, distance:Math.round(dist) }); toast('✅ 签到成功'); closeModal(); } else toast(`超出范围 (${dist.toFixed(0)}m)`,'error'); },
+                msg=>{ $('locInfo').innerHTML=`⚠️ ${msg}`; toast(msg,'error'); }
+            );
+        });
+        $('manualCoordBtn')?.addEventListener('click', e=>{
+            e.preventDefault();
+            const lat=prompt('请输入纬度：'), lng=prompt('请输入经度：');
+            if(lat&&lng){ const latNum=parseFloat(lat), lngNum=parseFloat(lng); if(isNaN(latNum)||isNaN(lngNum)) return toast('经纬度格式错误','error'); $('locInfo').innerHTML=`📍 ${latNum.toFixed(4)}, ${lngNum.toFixed(4)}`; const dist=haversine(latNum, lngNum, subj.targetLat, subj.targetLng); if(dist<=subj.radius){ addRecord('位置签到', subj, { lat:latNum, lng:lngNum, distance:Math.round(dist) }); toast('✅ 签到成功'); closeModal(); } else toast(`超出范围 (${dist.toFixed(0)}m)`,'error'); }
+        });
+    }
+
+    function startQRCheckin(subj) { showModal('📱 二维码签到', `<div class="text-center" style="margin-bottom:16px;"><div id="qrCode"></div><p style="margin-top:8px;">内容：${subj.qrContent}</p></div><div id="qrScanner" style="display:none;"><div id="reader"></div><button class="btn btn-sm mt-2" id="stopScan">停止扫描</button></div><button class="btn btn-block mt-2" id="toggleScanBtn">切换到扫描</button>`); new QRCode($('qrCode'),{text:subj.qrContent,width:140,height:140}); let scanning=false,html5Qr; $('toggleScanBtn').addEventListener('click',()=>{ if(scanning) return; scanning=true; $('qrScanner').style.display='block'; $('toggleScanBtn').style.display='none'; html5Qr=new Html5Qrcode("reader"); html5Qr.start({facingMode:"environment"},{fps:10,qrbox:{width:200,height:200}},(decoded)=>{ if(decoded===subj.qrContent){ addRecord('二维码签到',subj); toast('✅ 签到成功'); html5Qr.stop(); closeModal(); } else toast('内容不匹配','error'); },(err)=>{}).catch(()=>{ $('reader').innerHTML='摄像头不可用'; }); }); $('stopScan').addEventListener('click',()=>{ if(html5Qr){ html5Qr.stop(); html5Qr=null; } scanning=false; $('qrScanner').style.display='none'; $('toggleScanBtn').style.display='block'; }); }
+    function startCodeCheckin(subj) { showModal('🔢 签到码', `<input class="input" id="codeInput" placeholder="输入签到码" style="text-align:center; font-size:1.4rem; letter-spacing:0.2em;"><button class="btn btn-success btn-block mt-2" id="submitCode">确认签到</button><p class="text-center" style="font-size:0.8rem;">提示：${subj.checkinCode}</p>`); $('submitCode').addEventListener('click',()=>{ if($('codeInput').value.trim()===subj.checkinCode){ addRecord('签到码签到',subj); toast('✅ 签到成功'); closeModal(); } else toast('签到码错误','error'); }); }
+
+    function showModal(title, content) {
+        const overlay=document.createElement('div'); overlay.className='modal-overlay'; overlay.innerHTML=`<div class="modal-sheet"><div class="modal-handle"></div><h2 class="modal-title">${title}</h2>${content}</div>`; document.body.appendChild(overlay); overlay.addEventListener('click',e=>{ if(e.target===overlay) closeModal(); }); window.closeModal=()=>overlay.remove();
+    }
+    function downloadCSV(csvContent, fileName) { const blob=new Blob(['\uFEFF'+csvContent],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileName; a.click(); }
+
+    // ==================== 教师端 ====================
+    function renderTeacher() {
+        if(!currentUser.subjectIds || currentUser.subjectIds.length===0) return '<div class="card">您没有负责的学科，请联系超管分配。</div>';
+        const mySubjs = subjects.filter(s=>currentUser.subjectIds.includes(s.id));
+        const today = new Date().toISOString().split('T')[0];
+        return `<div class="card profile-card">
+            ${renderAvatar(currentUser.name)}
+            <div class="profile-info"><div class="profile-name">${currentUser.name}</div><div class="profile-id">${currentUser.studentId}</div></div>
+            <button class="btn btn-sm" id="logoutBtn">退出</button>
+        </div>
+        <div class="card"><h3>📘 我的学科</h3>
+            ${mySubjs.map(s=>{
+                const totalStudents = users.filter(u=>u.role==='student' && u.classId===s.classId).length;
+                const signedToday = records.filter(r=>r.subjectId===s.id && r.time?.startsWith(today)).length;
+                const pub = s.publishDate===today;
+                return `<div class="subject-chip" data-id="${s.id}">
+                    <div style="flex:1;"><div class="flex-between"><span>📗 ${s.name} <small style="font-weight:400;color:var(--text-light);">${getClassName(s.classId)}</small></span><span style="font-size:0.75rem;">${pub?'已发布':'未发布'}</span></div>
+                    <div style="font-size:0.8rem; color:var(--text-light); margin-top:4px;">应到 ${totalStudents} 人 · 实到 ${signedToday} 人</div></div>
+                    <div class="gap-2"><button class="btn btn-sm edit-subject">✏️</button><button class="btn btn-sm ${pub?'btn-success':'btn-primary'} toggle-publish">${pub?'取消发布':'发布'}</button><button class="btn btn-sm detail-btn">详情</button></div>
+                </div>`;
+            }).join('')}
+        </div>
+        <div class="card"><h3>⚙️ 签到开关</h3>${mySubjs.map(s=>renderSwitchRow(s)).join('')}</div>
+        <button class="btn btn-block" id="editInfoBtn">✏️ 修改个人信息</button>
+        <button class="btn btn-block mt-2" id="refreshBtn">🔄 刷新签到数据</button>`;
+    }
+
+    function renderSwitchRow(subj) {
+        return `<div style="margin-bottom:12px;" data-subject-id="${subj.id}"><strong>${subj.name}</strong>
+            <div class="switch-row"><span class="switch-label">📍 位置签到</span><label class="toggle"><input type="checkbox" ${subj.enableLocation?'checked':''} class="switch-input" data-field="enableLocation"><span class="slider"></span></label></div>
+            <div class="switch-row"><span class="switch-label">📱 二维码签到</span><label class="toggle"><input type="checkbox" ${subj.enableQRCode?'checked':''} class="switch-input" data-field="enableQRCode"><span class="slider"></span></label></div>
+            <div class="switch-row"><span class="switch-label">🔢 签到码签到</span><label class="toggle"><input type="checkbox" ${subj.enableCode?'checked':''} class="switch-input" data-field="enableCode"><span class="slider"></span></label></div>
+        </div>`;
+    }
+
+    function bindTeacherEvents() {
+        $('logoutBtn').addEventListener('click', ()=>{ session.clear(); render(); });
+        $('editInfoBtn').addEventListener('click', showInfoEditor);
+        $('refreshBtn').addEventListener('click', refreshData);
+        document.querySelectorAll('.subject-chip').forEach(chip=>{
+            const id = chip.dataset.id;
+            chip.querySelector('.edit-subject')?.addEventListener('click', ()=>openSubjectEditor(id, false));
+            chip.querySelector('.toggle-publish')?.addEventListener('click', async ()=>{
+                const subj = subjects.find(s=>s.id===id);
+                const today = new Date().toISOString().split('T')[0];
+                subj.publishDate = subj.publishDate===today ? '' : today;
+                await saveAllData(); render();
+            });
+            chip.querySelector('.detail-btn')?.addEventListener('click', ()=>showTeacherSubjectDetail(id));
+        });
+        document.querySelectorAll('.switch-input').forEach(input=>{ input.addEventListener('change', async function(){ const subjectId=this.closest('[data-subject-id]').dataset.subjectId; const field=this.dataset.field; const subj=subjects.find(s=>s.id===subjectId); if(subj){ subj[field]=this.checked; await saveAllData(); } }); });
+    }
+
+    function showTeacherSubjectDetail(subjectId) {
+        const subj = subjects.find(s=>s.id===subjectId); if(!subj) return;
+        const today = new Date().toISOString().split('T')[0];
+        const classId = subj.classId;
+        const allStudents = users.filter(u=>u.role==='student' && u.classId===classId).sort((a,b)=>(a.className||'').localeCompare(b.className||''));
+        const signedIds = records.filter(r=>r.subjectId===subjectId && r.time?.startsWith(today)).map(r=>r.studentId);
+        const classesMap = {};
+        allStudents.forEach(stu => { const cls = stu.classId; if (!classesMap[cls]) classesMap[cls] = []; classesMap[cls].push(stu); });
+        let listHtml = '';
+        for (const [clsId, stus] of Object.entries(classesMap)) {
+            listHtml += `<div class="class-group"><div class="class-group-title">${getClassName(clsId)} (${stus.length}人)</div>`;
+            stus.forEach(stu => { const signed = signedIds.includes(stu.studentId); listHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`; });
+            listHtml += `</div>`;
+        }
+        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px; overflow-y:auto; margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportTeacherDetail">📥 导出Excel（按班级）</button>`;
+        showModal(`${subj.name} 签到详情`, content);
+        $('exportTeacherDetail')?.addEventListener('click', ()=>{
+            let csv = '班级,姓名,学号,签到状态\n';
+            allStudents.forEach(stu => csv += `${getClassName(classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`);
+            downloadCSV(csv, `${subj.name}_签到明细.csv`);
+        });
+    }
+
+    function showInfoEditor() {
+        showModal('修改个人信息', `<div class="input-group"><label>姓名</label><input class="input" id="editName" value="${currentUser.name}"></div><div class="input-group"><label>学号</label><input class="input" id="editId" value="${currentUser.studentId}"></div><div class="input-group"><label>新密码</label><input class="input" type="password" id="editPwd" placeholder="留空不修改"></div><button class="btn btn-primary btn-block" id="saveInfo">保存</button><button class="btn btn-block mt-2" id="closeInfoModal">返回</button>`);
+        $('saveInfo').addEventListener('click', async ()=>{ const name=$('editName').value.trim(), id=$('editId').value.trim(), pwd=$('editPwd').value; if(!name||!id) return toast('姓名学号必填','error'); const user=users.find(u=>u.studentId===currentUser.studentId); if(user){ user.name=name; user.studentId=id; if(pwd) user.password=pwd; } currentUser.name=name; currentUser.studentId=id; session.save(currentUser); await saveAllData(); toast('已更新'); closeModal(); render(); });
+        $('closeInfoModal').addEventListener('click', closeModal);
+    }
+
+    // ==================== 超管端 ====================
     function renderSuperAdmin() {
         return `<div class="card profile-card">
             ${renderAvatar(currentUser.name)}
@@ -231,13 +452,39 @@
             await saveAllData(); renderStudentTableForAdmin();
         });
         $('excelUpload').addEventListener('change', handleExcel);
-        $('allRecordsBtn').addEventListener('click', ()=>{ /* 全部签到记录弹窗 */ });
-        $('loginLogsBtn').addEventListener('click', ()=>{ /* 登录日志弹窗 */ });
-        $('exportBtn').addEventListener('click', ()=>{ /* 导出备份 */ });
-        $('restoreFile').addEventListener('change', (e)=>{ /* 恢复备份 */ });
+        $('allRecordsBtn').addEventListener('click', ()=>{
+            const allRecs = records.slice(0,200).map(r=>`<div style="padding:8px;border-bottom:1px solid var(--border);">${r.subjectName||'未知'} | ${r.name} · ${r.method} · ${formatTime(r.time)}</div>`).join('') || '暂无';
+            showModal('全部签到记录', `<div style="max-height:400px;overflow-y:auto;">${allRecs}</div><button class="btn btn-sm btn-block mt-2" id="exportAllRecords">📥 导出全部记录</button>`);
+            $('exportAllRecords')?.addEventListener('click', ()=>{ let csv='学科,姓名,学号,方式,时间\n'; records.forEach(r=> csv+=`${r.subjectName||''},${r.name},${r.studentId},${r.method},${r.time}\n`); downloadCSV(csv,'全部签到记录.csv'); });
+        });
+        $('loginLogsBtn').addEventListener('click', ()=>{
+            const logsHtml = loginLogs.length ? loginLogs.map(l=>`<div style="padding:8px;border-bottom:1px solid var(--border);">${l.name} (${l.studentId}) - ${l.role} - ${formatTime(l.time)}</div>`).join('') : '暂无登录日志';
+            showModal('登录日志', `<div style="max-height:400px;overflow-y:auto;">${logsHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportLogsBtn">📥 导出日志</button>`);
+            $('exportLogsBtn')?.addEventListener('click', ()=>{ let csv='学号,姓名,角色,时间\n'; loginLogs.forEach(l=> csv+=`${l.studentId},${l.name},${l.role},${l.time}\n`); downloadCSV(csv,'登录日志.csv'); });
+        });
+        $('exportBtn').addEventListener('click', ()=>{
+            const data = { users, subjects, records, classes, loginLogs };
+            const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `签到备份_${new Date().toISOString().split('T')[0]}.json`; a.click();
+        });
+        $('restoreFile').addEventListener('change', (e)=>{
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev)=>{
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if(data.users&&data.subjects&&data.records&&data.classes){
+                        if(confirm('恢复数据将覆盖当前所有信息，确定继续吗？')){
+                            users=data.users; subjects=data.subjects; records=data.records; classes=data.classes; loginLogs=data.loginLogs||[];
+                            await saveAllData(); render(); toast('数据已恢复');
+                        }
+                    } else toast('无效备份','error');
+                } catch { toast('格式错误','error'); }
+            };
+            reader.readAsText(file);
+        });
     }
 
-    // 班级管理（新增编辑名称、管理学科入口）
     function renderClassList() {
         const container = $('classList');
         container.innerHTML = classes.map(c => `
@@ -249,37 +496,17 @@
                     <button class="btn btn-sm btn-danger delete-class" data-id="${c.id}">删除</button>
                 </div>
             </div>`).join('');
-
-        // 编辑班级名称
         container.querySelectorAll('.edit-class').forEach(b => b.addEventListener('click', async ()=>{
-            const id = b.dataset.id;
-            const c = classes.find(x => x.id === id);
-            if (!c) return;
+            const id = b.dataset.id; const c = classes.find(x => x.id === id); if(!c) return;
             const newName = prompt('修改班级名称：', c.name);
-            if (newName && newName.trim()) {
-                c.name = newName.trim();
-                await saveAllData();
-                renderClassList();
-                renderSubjectManage();
-                renderStudentTableForAdmin();
-            }
+            if(newName && newName.trim()) { c.name = newName.trim(); await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin(); }
         }));
-
-        // 管理班级内学科（弹窗）
-        container.querySelectorAll('.manage-subjects').forEach(b => b.addEventListener('click', ()=>{
-            const classId = b.dataset.id;
-            showClassSubjectsManager(classId);
-        }));
-
-        // 删除班级
+        container.querySelectorAll('.manage-subjects').forEach(b => b.addEventListener('click', ()=>{ showClassSubjectsManager(b.dataset.id); }));
         container.querySelectorAll('.delete-class').forEach(b => b.addEventListener('click', async ()=>{
             if(classes.length <= 1) return toast('至少保留一个班级','warning');
-            const id = b.dataset.id;
-            classes = classes.filter(c => c.id !== id);
-            subjects = subjects.filter(s => s.classId !== id);
+            const id = b.dataset.id; classes = classes.filter(c => c.id !== id); subjects = subjects.filter(s => s.classId !== id);
             users.forEach(u => { if(u.role==='student' && u.classId===id) u.classId = ''; });
-            await saveAllData();
-            renderClassList(); renderSubjectManage(); renderStudentTableForAdmin();
+            await saveAllData(); renderClassList(); renderSubjectManage(); renderStudentTableForAdmin();
         }));
     }
 
@@ -287,96 +514,60 @@
         const className = getClassName(classId);
         const classSubjects = subjects.filter(s => s.classId === classId);
         let html = `<h3 style="margin-bottom:10px;">${className} 的学科</h3>`;
-        if (classSubjects.length === 0) {
-            html += '<p style="color:var(--text-light);">暂无学科</p>';
-        } else {
-            html += classSubjects.map(s => `
-                <div class="flex-between" style="margin-bottom:6px;">
-                    <span>📗 ${s.name}</span>
-                    <div class="gap-2">
-                        <button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button>
-                        <button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button>
-                    </div>
-                </div>`).join('');
-        }
+        if (classSubjects.length === 0) { html += '<p style="color:var(--text-light);">暂无学科</p>'; }
+        else { html += classSubjects.map(s => `<div class="flex-between" style="margin-bottom:6px;"><span>📗 ${s.name}</span><div class="gap-2"><button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button><button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button></div></div>`).join(''); }
         html += `<button class="btn btn-sm btn-block mt-2" id="addSubjectToClass">➕ 新增学科</button>`;
         showModal(`班级学科管理 - ${className}`, html);
-
-        // 绑定新增按钮
         $('addSubjectToClass')?.addEventListener('click', async () => {
-            const name = prompt('学科名称：');
-            if (!name) return;
+            const name = prompt('学科名称：'); if(!name) return;
             const id = Date.now().toString(36);
-            subjects.push({
-                id, name, classId,
-                targetLat: 39.9042, targetLng: 116.4074, radius: 500,
-                checkinCode: name.substring(0,4).toUpperCase() + '2025',
-                qrContent: 'SUBJECT:' + id,
-                publishDate: '', enableLocation: true, enableQRCode: true, enableCode: true
-            });
-            await saveAllData();
-            closeModal();
-            showClassSubjectsManager(classId); // 刷新弹窗
+            subjects.push({ id, name, classId, targetLat:39.9042, targetLng:116.4074, radius:500, checkinCode:name.substring(0,4).toUpperCase()+'2025', qrContent:'SUBJECT:'+id, publishDate:'', enableLocation:true, enableQRCode:true, enableCode:true });
+            await saveAllData(); closeModal(); showClassSubjectsManager(classId);
         });
-
-        // 编辑学科
-        document.querySelectorAll('.edit-subject').forEach(b => {
-            b.addEventListener('click', () => {
-                closeModal();
-                openSubjectEditor(b.dataset.id, true);
-            });
-        });
-        // 删除学科
-        document.querySelectorAll('.delete-subject').forEach(b => {
-            b.addEventListener('click', async () => {
-                if (subjects.length <= 1) return toast('至少保留一个学科','warning');
-                subjects = subjects.filter(s => s.id !== b.dataset.id);
-                await saveAllData();
-                closeModal();
-                showClassSubjectsManager(classId);
-            });
-        });
+        document.querySelectorAll('.edit-subject').forEach(b => b.addEventListener('click', ()=>{ closeModal(); openSubjectEditor(b.dataset.id, true); }));
+        document.querySelectorAll('.delete-subject').forEach(b => b.addEventListener('click', async ()=>{ if(subjects.length<=1) return toast('至少保留一个学科','warning'); subjects = subjects.filter(s => s.id !== b.dataset.id); await saveAllData(); closeModal(); showClassSubjectsManager(classId); }));
     }
 
-    // 学科管理列表增强（显示所属班级）
     function renderSubjectManage() {
         const container = $('subjectList');
         const today = new Date().toISOString().split('T')[0];
         container.innerHTML = subjects.map(s => {
-            const totalStudents = users.filter(u => u.role==='student' && u.classId===s.classId).length;
-            const signed = records.filter(r => r.subjectId===s.id && r.time?.startsWith(today)).length;
-            return `<div class="flex-between" style="margin-bottom:8px;">
-                <div><span>📘 ${s.name}</span> <small style="color:var(--text-light);">${getClassName(s.classId)}</small> <span style="font-size:0.75rem; color:var(--text-light);">应到${totalStudents} 实到${signed}</span></div>
-                <div class="gap-2">
-                    <button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button>
-                    <button class="btn btn-sm detail-subject" data-id="${s.id}">详情</button>
-                    <button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button>
-                </div>
-            </div>`;
+            const totalStudents = users.filter(u=>u.role==='student' && u.classId===s.classId).length;
+            const signed = records.filter(r=>r.subjectId===s.id && r.time?.startsWith(today)).length;
+            return `<div class="flex-between" style="margin-bottom:8px;"><div><span>📘 ${s.name}</span> <small style="color:var(--text-light);">${getClassName(s.classId)}</small> <span style="font-size:0.75rem; color:var(--text-light);">应到${totalStudents} 实到${signed}</span></div><div class="gap-2"><button class="btn btn-sm edit-subject" data-id="${s.id}">✏️</button><button class="btn btn-sm detail-subject" data-id="${s.id}">详情</button><button class="btn btn-sm btn-danger delete-subject" data-id="${s.id}">🗑️</button></div></div>`;
         }).join('');
-        container.querySelectorAll('.edit-subject').forEach(b => b.addEventListener('click', () => openSubjectEditor(b.dataset.id, true)));
-        container.querySelectorAll('.detail-subject').forEach(b => b.addEventListener('click', () => showSubjectDetail(b.dataset.id)));
-        container.querySelectorAll('.delete-subject').forEach(b => b.addEventListener('click', async ()=>{
-            if(subjects.length <= 1) return toast('至少保留一个学科','warning');
-            subjects = subjects.filter(s => s.id !== b.dataset.id);
-            await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin();
-        }));
+        container.querySelectorAll('.edit-subject').forEach(b=>b.addEventListener('click', ()=>openSubjectEditor(b.dataset.id, true)));
+        container.querySelectorAll('.detail-subject').forEach(b=>b.addEventListener('click', ()=>showSubjectDetail(b.dataset.id)));
+        container.querySelectorAll('.delete-subject').forEach(b=>b.addEventListener('click', async ()=>{ if(subjects.length<=1) return toast('至少保留一个学科','warning'); subjects = subjects.filter(s=>s.id!==b.dataset.id); await saveAllData(); renderSubjectManage(); renderTeacherTableForAdmin(); }));
     }
 
-    // 教师分配学科（按班级分组选择）
+    function showSubjectDetail(subjectId) {
+        const subj = subjects.find(s=>s.id===subjectId); if(!subj) return;
+        const today = new Date().toISOString().split('T')[0];
+        const allStudents = users.filter(u=>u.role==='student' && u.classId===subj.classId).sort((a,b)=>(a.className||'').localeCompare(b.className||''));
+        const signedIds = records.filter(r=>r.subjectId===subjectId && r.time?.startsWith(today)).map(r=>r.studentId);
+        const classesMap = {}; allStudents.forEach(stu => { const cls = stu.classId; if(!classesMap[cls]) classesMap[cls]=[]; classesMap[cls].push(stu); });
+        let listHtml = '';
+        for(const [clsId, stus] of Object.entries(classesMap)){ listHtml+=`<div class="class-group"><div class="class-group-title">${getClassName(clsId)} (${stus.length}人)</div>`; stus.forEach(stu=>{ const signed=signedIds.includes(stu.studentId); listHtml+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span>${stu.name} (${stu.studentId})</span><span>${signed?'✅ 已签到':'⭕ 未签到'}</span></div>`; }); listHtml+='</div>'; }
+        const content = `<p>应签到 ${allStudents.length} 人 · 实际签到 ${signedIds.length} 人</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div><button class="btn btn-sm btn-block mt-2" id="exportSubjectDetail">📥 导出Excel（按班级）</button>`;
+        showModal(`${subj.name} 签到详情`, content);
+        $('exportSubjectDetail')?.addEventListener('click', ()=>{ let csv='班级,姓名,学号,签到状态\n'; allStudents.forEach(stu=> csv+=`${getClassName(subj.classId)},${stu.name},${stu.studentId},${signedIds.includes(stu.studentId)?'已签到':'未签到'}\n`); downloadCSV(csv,`${subj.name}_签到明细.csv`); });
+    }
+
+    function renderTeacherTableForAdmin() {
+        const container = $('teacherTable');
+        const teachers = users.filter(u=>u.role==='teacher');
+        container.innerHTML = teachers.length ? `<table class="mini-table"><tr><th>学号</th><th>姓名</th><th>负责学科</th><th>操作</th></tr>${teachers.map(t=>`<tr><td>${t.studentId}</td><td>${t.name}</td><td>${(t.subjectIds||[]).map(id=>subjects.find(s=>s.id===id)?.name||'').join(', ')||'未分配'}</td><td><button class="btn btn-sm assign-teacher" data-id="${t.studentId}">分配</button><button class="btn btn-sm detail-teacher" data-id="${t.studentId}">详情</button><button class="btn btn-sm btn-danger delete-user" data-id="${t.studentId}">删除</button></td></tr>`).join('')}</table>` : '<p>暂无教师</p>';
+        container.querySelectorAll('.assign-teacher').forEach(b=>b.addEventListener('click', ()=>assignTeacher(b.dataset.id)));
+        container.querySelectorAll('.detail-teacher').forEach(b=>b.addEventListener('click', ()=>showTeacherDetail(b.dataset.id)));
+        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{ users = users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderTeacherTableForAdmin(); renderStudentTableForAdmin(); }));
+    }
+
     function assignTeacher(teacherId) {
-        // 构建按班级分组的学科选项
         let classGroup = {};
-        subjects.forEach(s => {
-            const clsName = getClassName(s.classId);
-            if (!classGroup[clsName]) classGroup[clsName] = [];
-            classGroup[clsName].push(s);
-        });
+        subjects.forEach(s => { const clsName = getClassName(s.classId); if(!classGroup[clsName]) classGroup[clsName] = []; classGroup[clsName].push(s); });
         let promptText = '可用学科（按班级分组）：\n';
-        for (const [cls, subjs] of Object.entries(classGroup)) {
-            promptText += `\n【${cls}】\n`;
-            subjs.forEach(s => promptText += `  ${s.name} (${s.id})\n`);
-        }
+        for (const [cls, subjs] of Object.entries(classGroup)) { promptText += `\n【${cls}】\n`; subjs.forEach(s => promptText += `  ${s.name} (${s.id})\n`); }
         const subjId = prompt('输入要分配的学科ID：\n' + promptText);
         if (!subjId || !subjects.some(s => s.id === subjId)) return toast('学科不存在','error');
         const teacher = users.find(u => u.studentId === teacherId);
@@ -386,15 +577,108 @@
         saveAllData(); renderTeacherTableForAdmin(); renderSubjectManage();
     }
 
-    // 剩余的教师列表、学生列表、详情、Excel 导入等函数与之前版本一致，此处略。（实际代码完整包含）
-    // 地图编辑器 openSubjectEditor、initMap 保持不变
+    function showTeacherDetail(teacherId) {
+        const teacher = users.find(u=>u.studentId===teacherId); if(!teacher) return;
+        const subjectNames = (teacher.subjectIds||[]).map(id=>{ const s=subjects.find(x=>x.id===id); return s?`${s.name} (${getClassName(s.classId)})`:''; }).filter(Boolean).join(', ')||'未分配';
+        const today = new Date().toISOString().split('T')[0];
+        const relevantRecords = records.filter(r=>teacher.subjectIds?.includes(r.subjectId));
+        const todayCount = relevantRecords.filter(r=>r.time?.startsWith(today)).length;
+        const content = `<div style="line-height:1.8;"><p><strong>姓名：</strong>${teacher.name}</p><p><strong>学号：</strong>${teacher.studentId}</p><p><strong>负责学科：</strong>${subjectNames}</p><p><strong>今日签到人次：</strong>${todayCount}</p></div>`;
+        showModal(`教师详情：${teacher.name}`, content);
+    }
+
+    function renderStudentTableForAdmin() {
+        const container = $('studentTable');
+        const students = users.filter(u=>u.role==='student');
+        container.innerHTML = students.length ? `<table class="mini-table"><tr><th>学号</th><th>姓名</th><th>班级</th><th>操作</th></tr>${students.map(s=>`<tr><td>${s.studentId}</td><td>${s.name}</td><td><select class="input class-select" data-id="${s.studentId}">${classes.map(c=>`<option value="${c.id}" ${s.classId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></td><td><button class="btn btn-sm detail-student" data-id="${s.studentId}">详情</button><button class="btn btn-sm btn-danger delete-user" data-id="${s.studentId}">删除</button></td></tr>`).join('')}</table>` : '<p>暂无学生</p>';
+        container.querySelectorAll('.class-select').forEach(sel=>sel.addEventListener('change', async function(){ const user=users.find(u=>u.studentId===this.dataset.id); if(user){ user.classId=this.value; await saveAllData(); } }));
+        container.querySelectorAll('.detail-student').forEach(b=>b.addEventListener('click', ()=>showStudentDetailForAdmin(b.dataset.id)));
+        container.querySelectorAll('.delete-user').forEach(b=>b.addEventListener('click', async ()=>{ users=users.filter(u=>u.studentId!==b.dataset.id); await saveAllData(); renderStudentTableForAdmin(); }));
+    }
+
+    function showStudentDetailForAdmin(studentId) {
+        const stu = users.find(u=>u.studentId===studentId); if(!stu) return;
+        const myRecs = records.filter(r=>r.studentId===studentId).slice(0,50);
+        const listHtml = myRecs.length ? myRecs.map(r=>`<div style="padding:8px;border-bottom:1px solid #eee;">${r.subjectName||'未知'} · ${r.method} · ${formatTime(r.time)}</div>`).join('') : '暂无记录';
+        const content = `<p><strong>姓名：</strong>${stu.name}</p><p><strong>学号：</strong>${stu.studentId}</p><p><strong>班级：</strong>${getClassName(stu.classId)}</p><div style="max-height:300px;overflow-y:auto;margin-top:12px;">${listHtml}</div>`;
+        showModal(`学生详情：${stu.name}`, content);
+    }
+
+    async function handleExcel(e) {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev)=>{
+            const data = new Uint8Array(ev.target.result);
+            const wb = XLSX.read(data, {type:'array'});
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+            if(rows.length<2) return toast('至少两行','error');
+            const hdr = rows[0].map(h=>String(h).trim());
+            const idIdx = hdr.findIndex(h=>h==='学号'||h==='studentId');
+            const nameIdx = hdr.findIndex(h=>h==='姓名'||h==='name');
+            const classIdx = hdr.findIndex(h=>h==='班级'||h==='className');
+            if(idIdx===-1||nameIdx===-1) return toast('需学号、姓名列','error');
+            let cnt=0;
+            for(let i=1;i<rows.length;i++){
+                const sid=String(rows[i][idIdx]||'').trim(), sname=String(rows[i][nameIdx]||'').trim();
+                let sclass = classIdx!==-1 ? String(rows[i][classIdx]||'').trim() : '';
+                if(sclass && !classes.some(c=>c.name===sclass)){ const newClassId=Date.now().toString(36); classes.push({id:newClassId, name:sclass}); sclass=newClassId; }
+                else if(sclass){ const existing=classes.find(c=>c.name===sclass); if(existing) sclass=existing.id; }
+                if(sid&&sname&&!users.find(u=>u.studentId===sid)){ users.push({studentId:sid, name:sname, password:'123456', role:'student', classId:sclass||''}); cnt++; }
+            }
+            if(cnt>0){ await saveAllData(); renderStudentTableForAdmin(); } toast(`导入${cnt}人`);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // ==================== 地图编辑器 ====================
+    function openSubjectEditor(subjectId, isSuperAdmin) {
+        const subj = subjects.find(s=>s.id===subjectId); if(!subj) return;
+        $('appRoot').innerHTML = `<div class="card"><h3>✏️ 编辑学科：${subj.name}</h3>
+            <div class="input-group"><label>名称</label><input class="input" id="editName" value="${subj.name}"></div>
+            <div class="input-group"><label>班级</label><select class="input" id="editClassId">${classes.map(c=>`<option value="${c.id}" ${subj.classId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></div>
+            <label>📍 签到位置 (点击地图选点，下方按钮可定位)</label>
+            <div id="editorMap" class="map-container"></div>
+            <button class="btn btn-sm btn-block mb-2" id="locateMeBtn">📍 定位到我的位置</button>
+            <div class="gap-2 mb-2"><input class="input" id="latInput" value="${subj.targetLat}"><input class="input" id="lngInput" value="${subj.targetLng}"></div>
+            <div class="input-group"><label>范围(米)</label><input class="input" id="radiusInput" value="${subj.radius}"></div>
+            <div class="input-group"><label>📱 二维码内容</label><input class="input" id="qrContentInput" value="${subj.qrContent}"></div>
+            <div class="input-group"><label>🔢 签到码</label><input class="input" id="codeInput" value="${subj.checkinCode}"></div>
+            <button class="btn btn-primary btn-block" id="saveSubjectBtn">保存</button>
+            <button class="btn btn-block mt-2" id="backBtn">← 返回</button>
+        </div>`;
+        $('saveSubjectBtn').addEventListener('click', async ()=>{
+            subj.name = $('editName').value.trim(); subj.classId = $('editClassId').value;
+            subj.targetLat = parseFloat($('latInput').value); subj.targetLng = parseFloat($('lngInput').value);
+            subj.radius = parseInt($('radiusInput').value); subj.qrContent = $('qrContentInput').value.trim(); subj.checkinCode = $('codeInput').value.trim();
+            await saveAllData(); toast('已保存'); render();
+        });
+        $('backBtn').addEventListener('click', ()=>render());
+        initMap(subj);
+    }
+
+    async function initMap(subj) {
+        const container=$('editorMap'); if(!container) return;
+        container.innerHTML='<p class="text-center">正在加载地图...</p>';
+        await waitForAMapLoader(); if(typeof AMapLoader==='undefined'){ container.innerHTML='<p class="text-center" style="color:var(--danger);">地图组件加载失败</p>'; return; }
+        window._AMapSecurityConfig={securityJsCode:amapSecret};
+        try{
+            const AMap=await AMapLoader.load({key:amapKey,version:'2.0'});
+            if(adminMap) adminMap.destroy();
+            adminMap=new AMap.Map('editorMap',{zoom:17,center:[subj.targetLng,subj.targetLat],viewMode:'3D',showBuildingBlock:true});
+            targetMarker=new AMap.Marker({position:[subj.targetLng,subj.targetLat],draggable:true,map:adminMap, icon:new AMap.Icon({size:new AMap.Size(36,42),imageSize:new AMap.Size(36,42),image:'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png'}), offset:new AMap.Pixel(-13,-38)});
+            adminMap.on('click',e=>{ targetMarker.setPosition(e.lnglat); $('latInput').value=e.lnglat.lat.toFixed(6); $('lngInput').value=e.lnglat.lng.toFixed(6); });
+            targetMarker.on('dragend',e=>{ $('latInput').value=e.lnglat.lat.toFixed(6); $('lngInput').value=e.lnglat.lng.toFixed(6); });
+            const locateBtn=$('locateMeBtn');
+            if(locateBtn){ locateBtn.addEventListener('click',()=>{ if(!navigator.geolocation){ toast('浏览器不支持定位','error'); return; } navigator.geolocation.getCurrentPosition(pos=>{ adminMap.setCenter([pos.coords.longitude,pos.coords.latitude]); toast('已定位到您的当前位置'); },err=>{ toast('定位失败，请检查权限','error'); },{enableHighAccuracy:true,timeout:10000}); }); }
+        }catch(e){ container.innerHTML='<p class="text-center" style="color:var(--danger);">地图加载失败</p>'; }
+    }
 
     // 启动
     await loadFromCloud().catch(()=>{});
     loadFromLocal();
     currentUser = session.load();
     if(currentUser){
-        const exist = users.find(u => u.studentId === currentUser.studentId);
+        const exist = users.find(u=>u.studentId===currentUser.studentId);
         if(!exist || exist.role !== currentUser.role) { session.clear(); currentUser = null; }
         else { currentUser.name = exist.name; currentUser.studentId = exist.studentId; currentUser.subjectIds = exist.subjectIds; currentUser.classId = exist.classId; }
     }
